@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report an Issue — Care Coordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  DESIGN NOTES (hidden) — database gaps + design decisions:
+  1. RESOLVES OPEN QUESTION (self-reported issues): a self-report is FACTUAL data
+     with provenance = patient-reported. It enters as an intake with status
+     "needs review." It NEVER becomes a verified care_gaps row until the review
+     step completes. Review = AI analysis cross-checks against case data +
+     human confirmation. Verified reports create a care gap with a provenance
+     link back to the originating report.
+  2. No self_reports table (or reuse intakes with an intake_type taxonomy value =
+     "self_reported_issue"). Leaning: reuse intakes — one intake pipeline,
+     taxonomy distinguishes source. Needs: reporter role (patient vs caregiver),
+     category via workflow_taxonomy, description, status via taxonomy
+     (needs review / under review / verified — care gap created / logged only).
+  3. Report categories below must come from workflow_taxonomy in the live build,
+     not hard-coded options.
+  4. Population-data note: only VERIFIED reports feed aggregate coordination
+     analytics (contact_outcomes / pattern layer). Unverified reports never do.
+  5. Language guardrail: reports about suspected bias/discrimination are stored
+     as "concern — pattern requires review," never asserted as fact.
+-->
+<style>
+  :root{
+    --ink:#16211d;--muted:#586a63;--paper:#e7ebe6;--card:#ffffff;
+    --teal:#0e6e63;--teal-deep:#0a3d38;--amber:#9a4f12;--amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;--mist:#d3dbd4;--rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);flex-wrap:wrap;}
+  .brand{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .nav-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .nav-links a{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;}
+  .nav-links a:hover{color:var(--teal-deep);}
+  .switcher{display:flex;gap:8px;margin-top:22px;}
+  .person-btn{display:flex;align-items:center;gap:10px;background:var(--card);
+    border:1px solid var(--mist);border-radius:999px;padding:8px 16px 8px 8px;cursor:pointer;
+    font-family:inherit;font-size:13.5px;font-weight:600;color:var(--muted);}
+  .person-btn .pav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;
+    color:#fff;background:var(--mist);}
+  .person-btn.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-deep);}
+  .person-btn.active .pav{background:var(--teal);}
+  .person-btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .head{margin:26px 0 0;}
+  .head h1{font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4vw,32px);margin:0 0 8px;letter-spacing:-.01em;}
+  .head p{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch;}
+  .section-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+  .section-title .hint{font-weight:400;font-size:12.5px;color:var(--muted);}
+
+  /* form */
+  .report-card{margin-top:26px;background:var(--card);border:1px solid var(--mist);
+    border-radius:12px;padding:20px;}
+  .field{margin-top:14px;}
+  .field:first-child{margin-top:0;}
+  .field label{display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;}
+  .field select,.field input,.field textarea{
+    width:100%;font-family:inherit;font-size:14px;color:var(--ink);
+    background:#f7f9f7;border:1px solid var(--rule);border-radius:9px;padding:11px 13px;}
+  .field textarea{resize:vertical;min-height:90px;}
+  .field select:focus,.field input:focus,.field textarea:focus{
+    outline:3px solid #9fd0c8;outline-offset:1px;border-color:var(--teal);}
+  .field .fh{font-size:12.5px;color:var(--muted);margin-top:5px;}
+  .btn{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;
+    padding:10px 18px;border-radius:9px;cursor:pointer;border:1px solid transparent;}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .form-actions{margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .submit-confirm{display:none;margin-top:14px;padding:12px 15px;border-radius:9px;
+    background:var(--teal-soft);border:1px solid #a9d2c9;font-size:13.5px;color:#23483f;}
+  .submit-confirm.show{display:block;}
+
+  /* how review works */
+  .review-how{margin-top:26px;background:var(--card);border:1px solid var(--mist);
+    border-radius:12px;padding:18px 20px;}
+  .rh-steps{display:flex;flex-direction:column;gap:0;margin-top:14px;}
+  .rh-step{display:grid;grid-template-columns:30px 1fr;gap:14px;position:relative;padding-bottom:16px;}
+  .rh-mark{display:flex;justify-content:center;position:relative;}
+  .rh-dot{width:12px;height:12px;border-radius:50%;background:var(--card);
+    border:3px solid var(--teal);margin-top:4px;z-index:1;}
+  .rh-step:not(:last-child) .rh-mark::after{content:"";position:absolute;top:16px;bottom:0;
+    left:50%;width:2px;margin-left:-1px;background:var(--mist);}
+  .rh-title{font-weight:600;font-size:14px;margin:0 0 3px;}
+  .rh-desc{font-size:13px;color:var(--muted);margin:0;max-width:60ch;}
+
+  /* past reports */
+  .past{margin-top:34px;}
+  .report{background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:16px 18px;margin-top:12px;}
+  .report-top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    flex-wrap:wrap;margin-bottom:8px;}
+  .report-title{font-weight:600;font-size:14.5px;margin:0;}
+  .status{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;
+    text-transform:uppercase;padding:4px 10px;border-radius:999px;white-space:nowrap;}
+  .status.review{background:var(--amber-soft);color:var(--amber);border:1px solid #e0c3a4;}
+  .status.verified{background:var(--teal-soft);color:var(--teal-deep);border:1px solid #a9d2c9;}
+  .status.logged{background:#eef1ee;color:var(--muted);border:1px solid var(--mist);}
+  .report-desc{font-size:13.5px;color:var(--muted);margin:0 0 8px;max-width:62ch;}
+  .report-meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);margin:0;}
+  .report-outcome{font-size:13px;color:#234a44;background:var(--teal-soft);
+    border-radius:8px;padding:9px 12px;margin-top:10px;max-width:62ch;}
+  .report-outcome b{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--teal);display:block;margin-bottom:2px;font-weight:500;}
+  .report-outcome a{color:var(--teal-deep);font-weight:600;}
+
+  footer{margin-top:40px;text-align:center;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <nav class="nav-links" aria-label="Site">
+      <a href="care_checklist.html">Checklist</a>
+      <a href="appointments.html">Appointments</a>
+      <a href="patient_dashboard.html">Case dashboard</a>
+    </nav>
+  </div>
+
+  <div class="switcher" role="tablist" aria-label="Person">
+    <button class="person-btn active" id="btn-maria" role="tab" aria-selected="true" onclick="switchPerson('maria')">
+      <span class="pav">MA</span> Maria Alvarez
+    </button>
+    <button class="person-btn" id="btn-robert" role="tab" aria-selected="false" onclick="switchPerson('robert')">
+      <span class="pav">RA</span> Robert Alvarez
+    </button>
+  </div>
+
+  <div class="head">
+    <h1>Report an issue</h1>
+    <p>Tell me what's going wrong — a missed callback, records that never arrived, a bill that doesn't match. Every report is reviewed before it counts, so the record stays trustworthy.</p>
+  </div>
+
+  <!-- REPORT FORM -->
+  <section class="report-card">
+    <div class="field">
+      <label for="ri-cat">What kind of issue</label>
+      <select id="ri-cat">
+        <option>No response from a provider or office</option>
+        <option>Records missing or not transferred</option>
+        <option>Appointment or scheduling problem</option>
+        <option>Referral hasn't happened</option>
+        <option>Insurance or authorization problem</option>
+        <option>Billing doesn't match what I was told</option>
+        <option>Concern about how I was treated</option>
+        <option>Something else</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ri-who">Who's involved</label>
+      <input id="ri-who" type="text" placeholder="e.g., Primary Care Associates records department">
+      <p class="fh">Pick from the provider list where possible — it links the report to the right organization.</p>
+    </div>
+    <div class="field">
+      <label for="ri-what">What happened</label>
+      <textarea id="ri-what" placeholder="What was supposed to happen, what actually happened, and roughly when."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="button" onclick="document.getElementById('ri-confirm').classList.add('show')">Submit report</button>
+    </div>
+    <div class="submit-confirm" id="ri-confirm" role="status">Received — status: <b>needs review</b>. I'll cross-check it against what's already on file. If it holds up, it becomes a tracked care gap with an owner and a next step, and you'll see it on the dashboard.</div>
+  </section>
+
+  <!-- HOW REVIEW WORKS -->
+  <section class="review-how">
+    <h2 class="section-title">What happens to a report <span class="hint">why nothing counts until it's reviewed</span></h2>
+    <div class="rh-steps">
+      <div class="rh-step">
+        <div class="rh-mark"><span class="rh-dot"></span></div>
+        <div>
+          <p class="rh-title">1 · Logged as reported</p>
+          <p class="rh-desc">Your words, kept as-is, marked patient-reported. Facts and interpretation never mix.</p>
+        </div>
+      </div>
+      <div class="rh-step">
+        <div class="rh-mark"><span class="rh-dot"></span></div>
+        <div>
+          <p class="rh-title">2 · Cross-checked</p>
+          <p class="rh-desc">I compare it against communications, requests, and appointments already on file — supporting signals, conflicting signals, and what's missing.</p>
+        </div>
+      </div>
+      <div class="rh-step">
+        <div class="rh-mark"><span class="rh-dot"></span></div>
+        <div>
+          <p class="rh-title">3 · Verified or logged only</p>
+          <p class="rh-desc">If the evidence holds, it becomes a tracked care gap with a responsible party and next step. If not, it stays on file as a report — nothing is discarded, nothing is overstated.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MARIA past reports ============ -->
+  <div id="person-maria">
+    <section class="past">
+      <h2 class="section-title">Maria's reports <span class="hint">and where each one stands</span></h2>
+
+      <div class="report">
+        <div class="report-top">
+          <p class="report-title">Records missing or not transferred</p>
+          <span class="status verified">Verified · care gap created</span>
+        </div>
+        <p class="report-desc">"Cardiology says they never got my records, but primary care told me they sent them."</p>
+        <p class="report-meta">Reported Jul 1 · Primary Care Associates · Riverbend Cardiology</p>
+        <div class="report-outcome">
+          <b>Outcome</b>
+          Cross-check confirmed the contradiction against the June 30 email. This is now the open care gap on the case, with the records department as responsible party. <a href="patient_dashboard.html">See it on the dashboard →</a>
+        </div>
+      </div>
+
+      <div class="report">
+        <div class="report-top">
+          <p class="report-title">Billing doesn't match what I was told</p>
+          <span class="status review">Needs review</span>
+        </div>
+        <p class="report-desc">"I was quoted a $40 copay at the front desk but the statement shows $95."</p>
+        <p class="report-meta">Reported Jul 17 · Primary Care Associates billing</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ROBERT past reports ============ -->
+  <div id="person-robert" hidden>
+    <section class="past">
+      <h2 class="section-title">Robert's reports <span class="hint">and where each one stands</span></h2>
+
+      <div class="report">
+        <div class="report-top">
+          <p class="report-title">No response from a provider or office</p>
+          <span class="status logged">Logged · resolved before review</span>
+        </div>
+        <p class="report-desc">"Called the office twice about scheduling and nobody called back."</p>
+        <p class="report-meta">Reported Jul 10 · Primary Care Associates</p>
+        <div class="report-outcome">
+          <b>Outcome</b>
+          The office responded before review completed — the appointment request pipeline picked it up. Kept on file: the two unanswered calls still count in this office's response pattern.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>Synthetic demo data · Self-reported issues · 101 tier · Reviewed before counted</footer>
+
+</div>
+
+<script>
+  function switchPerson(who){
+    var isMaria = who === 'maria';
+    document.getElementById('person-maria').hidden = !isMaria;
+    document.getElementById('person-robert').hidden = isMaria;
+    document.getElementById('btn-maria').classList.toggle('active', isMaria);
+    document.getElementById('btn-robert').classList.toggle('active', !isMaria);
+    document.getElementById('btn-maria').setAttribute('aria-selected', isMaria);
+    document.getElementById('btn-robert').setAttribute('aria-selected', !isMaria);
+  }
+</script>
+</body>
+</html>
