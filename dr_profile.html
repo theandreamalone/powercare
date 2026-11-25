@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. Adaeze Okafor — Provider Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  DESIGN NOTES (hidden) — database gaps + data sourcing rules:
+  1. Credential data must be SOURCED, never fabricated. Live-version sources per
+     field are labeled in the UI: NPI Registry (NPPES API — free, public),
+     state medical board license lookup, ABMS board certification.
+     All demo values on this page are synthetic and labeled as such.
+  2. Providers table needs credential columns (or a provider_credentials child
+     table): npi_number, license_state, license_number, license_status via
+     taxonomy, license_verified_at, board_certification text, certifying_board,
+     education fields, disciplinary_actions_on_file boolean + source + checked_at.
+     Every credential field carries source + last-verified date — provenance is
+     a first-class column, matching the facts/provenance principle.
+  3. Disciplinary/malpractice display rule: show only what a public source
+     states, with the source and date checked. Never summarize, characterize,
+     or score it. "None on file as of [date], per [source]" or the sourced
+     record itself. This is the anti-Zocdoc position: no ratings, no reviews,
+     no pay-to-rank — verified public data only.
+  4. NO star ratings, NO patient reviews anywhere on this page (no review
+     pipeline exists; fabricated ratings are the Zocdoc failure mode we avoid).
+  5. "Response pattern" panel is the contact_outcomes surface — aggregated
+     operational data (median response time, resolution rate). Marked "coming
+     soon"; populates only from verified case outcomes, never from reviews.
+-->
+<style>
+  :root{
+    --ink:#16211d;--muted:#586a63;--paper:#e7ebe6;--card:#ffffff;
+    --teal:#0e6e63;--teal-deep:#0a3d38;--amber:#9a4f12;--amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;--mist:#d3dbd4;--rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);flex-wrap:wrap;}
+  .brand{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .backlink{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;}
+  .backlink:hover{color:var(--teal-deep);}
+
+  /* profile hero */
+  .prof-hero{background:var(--teal-deep);color:#eef4f2;border-radius:16px;
+    padding:28px 28px 24px;margin-top:22px;}
+  .prof-top{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+  .prof-av{width:74px;height:74px;border-radius:16px;background:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:26px;color:#fff;flex-shrink:0;}
+  .prof-hero h1{font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4vw,32px);margin:0 0 4px;letter-spacing:-.01em;}
+  .prof-spec{font-size:15px;color:#cfe0db;margin:0 0 10px;}
+  .prof-badges{display:flex;gap:8px;flex-wrap:wrap;}
+  .pb{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;padding:5px 11px;border-radius:999px;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#dff0eb;}
+  .pb.ok{background:rgba(127,240,216,.14);border-color:rgba(127,240,216,.4);color:#a9f5e3;}
+  .prof-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;padding-top:18px;
+    border-top:1px solid rgba(255,255,255,.12);}
+  .btn{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;
+    padding:10px 18px;border-radius:9px;cursor:pointer;border:1px solid transparent;}
+  .btn-white{background:#fff;color:var(--teal-deep);}
+  .btn-white:hover{background:#ddf0eb;}
+  .btn-ghost-w{background:transparent;border-color:rgba(255,255,255,.3);color:#eef4f2;}
+  .btn-ghost-w:hover{background:rgba(255,255,255,.1);}
+  .btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+
+  .section-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+  .section-title .hint{font-weight:400;font-size:12.5px;color:var(--muted);}
+
+  /* credentials */
+  .creds{margin-top:30px;}
+  .cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+  .cred{background:var(--card);border:1px solid var(--mist);border-radius:11px;padding:15px 16px;}
+  .cred .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 7px;}
+  .cred .v{font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:16.5px;
+    line-height:1.3;margin:0 0 8px;}
+  .cred .v.ok{color:var(--teal-deep);}
+  .src{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;align-items:center;gap:6px;margin:0;}
+  .src::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--teal);flex-shrink:0;}
+  .cred.wide{grid-column:1 / -1;}
+  .disc-note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:62ch;}
+
+  /* practice */
+  .practice{margin-top:32px;}
+  .prac-card{background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:18px;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .prac .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 5px;}
+  .prac .v{font-size:14.5px;font-weight:600;margin:0 0 2px;}
+  .prac .s{font-size:13px;color:var(--muted);margin:0;}
+
+  /* response pattern — contact_outcomes surface */
+  .pattern{margin-top:32px;background:var(--card);border:1px solid var(--mist);
+    border-radius:12px;padding:18px 20px;}
+  .pattern-rows{margin-top:12px;display:flex;flex-direction:column;gap:10px;}
+  .pat{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:10px 0;border-bottom:1px solid var(--rule);}
+  .pat:last-child{border-bottom:none;}
+  .pat .pk{font-size:13.5px;color:var(--muted);}
+  .pat .pv{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+    background:#eef1ee;border:1px solid var(--mist);border-radius:999px;padding:4px 11px;white-space:nowrap;}
+  .pattern-note{font-size:12.5px;color:var(--muted);margin:12px 0 0;max-width:62ch;}
+
+  /* no reviews stance */
+  .stance{margin-top:26px;background:var(--teal-soft);border:1px solid #a9d2c9;
+    border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;}
+  .stance-dot{width:34px;height:34px;border-radius:9px;background:#fff;color:var(--teal);
+    display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .stance p{margin:0;font-size:13.5px;color:#234a44;max-width:62ch;}
+  .stance p b{color:var(--teal-deep);}
+
+  footer{margin-top:40px;text-align:center;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--muted);}
+  @media (max-width:600px){
+    .cred-grid{grid-template-columns:1fr;}
+    .prac-card{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <a class="backlink" href="providers.html">← Back to providers</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="prof-hero">
+    <div class="prof-top">
+      <div class="prof-av">AO</div>
+      <div>
+        <h1>Dr. Adaeze Okafor, MD</h1>
+        <p class="prof-spec">Cardiology · Riverbend Cardiology</p>
+        <div class="prof-badges">
+          <span class="pb ok">License active</span>
+          <span class="pb ok">Board certified</span>
+          <span class="pb">Accepting new patients</span>
+          <span class="pb">On Maria's care team</span>
+        </div>
+      </div>
+    </div>
+    <div class="prof-actions">
+      <button class="btn btn-white" type="button" onclick="window.location.href='appointments.html'">Request an appointment</button>
+      <button class="btn btn-ghost-w" type="button">Add to care team</button>
+    </div>
+  </section>
+
+  <!-- CREDENTIALS -->
+  <section class="creds">
+    <h2 class="section-title">Credentials <span class="hint">every field shows where the live data comes from</span></h2>
+    <div class="cred-grid">
+      <div class="cred">
+        <p class="k">NPI number</p>
+        <p class="v">1000000000 <span style="font-size:12px;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;">(synthetic)</span></p>
+        <p class="src">Source: NPI Registry (NPPES) · public API</p>
+      </div>
+      <div class="cred">
+        <p class="k">Medical license</p>
+        <p class="v ok">Active · Ohio · #35.000000</p>
+        <p class="src">Source: State Medical Board of Ohio · checked Jul 12, 2026</p>
+      </div>
+      <div class="cred">
+        <p class="k">Board certification</p>
+        <p class="v ok">Cardiovascular Disease</p>
+        <p class="src">Source: ABMS / American Board of Internal Medicine</p>
+      </div>
+      <div class="cred">
+        <p class="k">Education</p>
+        <p class="v">Case Western Reserve, MD · Residency &amp; fellowship, Cleveland Clinic</p>
+        <p class="src">Source: NPI Registry + practice-listed · unverified fields flagged</p>
+      </div>
+      <div class="cred wide">
+        <p class="k">Disciplinary actions</p>
+        <p class="v ok">None on file as of Jul 12, 2026</p>
+        <p class="src">Source: State Medical Board of Ohio public records</p>
+        <p class="disc-note">Shown exactly as the public source states it — with the date checked. I don't summarize, characterize, or score disciplinary history. If a record exists, you see the sourced record itself.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="practice">
+    <h2 class="section-title">Practice</h2>
+    <div class="prac-card">
+      <div class="prac">
+        <p class="k">Location</p>
+        <p class="v">Riverbend Cardiology</p>
+        <p class="s">410 Meridian Ave, Suite 220</p>
+      </div>
+      <div class="prac">
+        <p class="k">Contact on file</p>
+        <p class="v">Office line · fax · portal</p>
+        <p class="s">Records transfers: fax preferred, per office</p>
+      </div>
+      <div class="prac">
+        <p class="k">Insurance</p>
+        <p class="v">Accepts Maria's plan</p>
+        <p class="s">Per practice listing · confirm at booking</p>
+      </div>
+      <div class="prac">
+        <p class="k">Hospital affiliation</p>
+        <p class="v">Riverbend Medical Center</p>
+        <p class="s">Source: practice-listed</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESPONSE PATTERN (contact_outcomes surface) -->
+  <section class="pattern">
+    <h2 class="section-title">Response pattern <span class="hint">from verified case outcomes — coming soon</span></h2>
+    <div class="pattern-rows">
+      <div class="pat"><span class="pk">Median response to records requests</span><span class="pv">Building</span></div>
+      <div class="pat"><span class="pk">Requests resolved without escalation</span><span class="pv">Building</span></div>
+      <div class="pat"><span class="pk">Most reliable contact method</span><span class="pv">Building</span></div>
+    </div>
+    <p class="pattern-note">This panel fills in from real, verified coordination outcomes across cases — how this office actually responds, resolves, and communicates. Not reviews. Not opinions. Logged outcomes only.</p>
+  </section>
+
+  <!-- STANCE -->
+  <div class="stance">
+    <span class="stance-dot">◧</span>
+    <p><b>No star ratings, no paid placement.</b> Profiles show verified public credentials and, over time, real coordination outcomes. No one can pay to rank here, and nothing on this page is an opinion.</p>
+  </div>
+
+  <footer>Synthetic demo data · Provider profile · 201 tier · Live version sourced from NPI Registry &amp; state boards</footer>
+
+</div>
+</body>
+</html>
