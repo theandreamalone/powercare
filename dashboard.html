@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Care Coordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16211d;
+    --muted:#586a63;
+    --paper:#e7ebe6;
+    --card:#ffffff;
+    --teal:#0e6e63;
+    --teal-deep:#0a3d38;
+    --amber:#9a4f12;
+    --amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;
+    --mist:#d3dbd4;
+    --rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+
+  /* top bar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);
+  }
+  .brand{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;
+  }
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .env-tag{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);border:1px solid var(--mist);border-radius:999px;padding:5px 11px;
+  }
+
+  /* hero / summary */
+  .hero{margin-top:26px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 10px;
+  }
+  .hero h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4.2vw,32px);margin:0 0 10px;letter-spacing:-.01em;
+  }
+  .hero p.sub{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch;}
+
+  /* stat row */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px;}
+  .stat-card{
+    background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:16px 16px;
+  }
+  .stat-card .n{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:26px;color:var(--teal-deep);}
+  .stat-card .l{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .stat-card.attn{background:var(--amber-soft);border-color:#e0c3a4;}
+  .stat-card.attn .n{color:var(--amber);}
+
+  /* section title */
+  .section-title{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin:34px 0 4px;display:flex;align-items:center;gap:10px;
+  }
+  .section-title .hint{
+    font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);
+  }
+
+  /* case card */
+  .case-list{margin-top:16px;display:flex;flex-direction:column;gap:12px;}
+  .case-card{
+    display:block;background:var(--card);border:1px solid var(--mist);border-radius:14px;
+    padding:20px 22px;text-decoration:none;color:inherit;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .case-card:hover{border-color:var(--teal);box-shadow:0 4px 18px rgba(14,110,99,.10);}
+  .case-card:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .cc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .cc-patient{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 6px;
+  }
+  .cc-title{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:18px;margin:0 0 10px;color:var(--ink);
+    max-width:52ch;
+  }
+  .cc-status{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;background:var(--amber-soft);color:var(--amber);
+    border:1px solid #e6cdb2;white-space:nowrap;flex-shrink:0;
+  }
+  .cc-facts{display:flex;gap:26px;flex-wrap:wrap;margin:14px 0 16px;}
+  .cc-fact{display:flex;flex-direction:column;gap:3px;}
+  .cc-fact .k{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);
+  }
+  .cc-fact .v{font-size:14px;font-weight:600;color:var(--ink);}
+  .cc-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding-top:14px;border-top:1px solid var(--rule);
+  }
+  .cc-deadline{font-size:13px;color:var(--amber);display:flex;align-items:center;gap:7px;}
+  .cc-arrow{
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--teal);white-space:nowrap;
+  }
+
+  /* empty state card for future cases */
+  .add-case{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    border:1.5px dashed var(--mist);border-radius:14px;padding:20px;
+    color:var(--muted);font-size:13.5px;margin-top:12px;
+  }
+
+  /* locked teaser */
+  .locked{
+    position:relative;margin-top:34px;border-radius:14px;overflow:hidden;
+    border:1px solid var(--mist);min-height:200px;
+  }
+  .locked-blur{
+    padding:26px 24px;filter:blur(5px);opacity:.55;background:var(--card);
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .lb-row{display:flex;align-items:center;gap:14px;}
+  .lb-bar{height:22px;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--teal-soft));}
+  .lb-tag{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);}
+  .locked-overlay{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;
+    background:linear-gradient(180deg,rgba(231,235,230,.72),rgba(231,235,230,.9));
+  }
+  .locked-icon{font-size:22px;margin-bottom:10px;}
+  .locked-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:var(--teal-deep);}
+  .locked-desc{font-size:13.5px;color:var(--muted);margin:0 0 14px;max-width:46ch;}
+  .locked-cta{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--amber);border:1px solid #e0c3a4;background:var(--amber-soft);
+    padding:7px 14px;border-radius:999px;
+  }
+
+  footer{
+    margin-top:40px;text-align:center;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:var(--muted);
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{opacity:0;transform:translateY(10px);animation:rise .5s ease forwards;}
+    .reveal:nth-child(1){animation-delay:.02s;}
+    .reveal:nth-child(2){animation-delay:.08s;}
+    .reveal:nth-child(3){animation-delay:.14s;}
+    .reveal:nth-child(4){animation-delay:.20s;}
+    @keyframes rise{to{opacity:1;transform:none;}}
+  }
+
+  @media (max-width:620px){
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .cc-facts{gap:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar reveal">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <span class="env-tag">Synthetic demo data</span>
+  </div>
+
+  <section class="hero reveal">
+    <p class="eyebrow">Dashboard</p>
+    <h1>1 active case needs your attention</h1>
+    <p class="sub">Every case below shows what's missing, who owns the next step, and what happens if nothing moves. Open a case to see the full breakdown.</p>
+  </section>
+
+  <div class="stat-row reveal">
+    <div class="stat-card"><div class="n">1</div><div class="l">Active case</div></div>
+    <div class="stat-card attn"><div class="n">1</div><div class="l">Open care gap</div></div>
+    <div class="stat-card"><div class="n">1</div><div class="l">Open task</div></div>
+    <div class="stat-card attn"><div class="n">1</div><div class="l">Draft awaiting approval</div></div>
+  </div>
+
+  <h2 class="section-title reveal">Cases <span class="hint">sorted by what needs you first</span></h2>
+
+  <div class="case-list">
+    <a class="case-card reveal" href="case_breakdown.html">
+      <div class="cc-top">
+        <div>
+          <p class="cc-patient">Maria Alvarez · Patient</p>
+          <p class="cc-title">Two providers disagree on whether records were sent</p>
+        </div>
+        <span class="cc-status">Contradiction found</span>
+      </div>
+      <div class="cc-facts">
+        <div class="cc-fact"><span class="k">Responsible party</span><span class="v">Records department</span></div>
+        <div class="cc-fact"><span class="k">Risk level</span><span class="v">Moderate — appointment at risk</span></div>
+        <div class="cc-fact"><span class="k">Next action</span><span class="v">Awaiting your approval</span></div>
+      </div>
+      <div class="cc-foot">
+        <span class="cc-deadline">🕐 Records must be confirmed by July 8 · in 1 day</span>
+        <span class="cc-arrow">View case breakdown →</span>
+      </div>
+    </a>
+
+    <div class="add-case">More cases will appear here as they're added</div>
+  </div>
+
+  <!-- LOCKED TEASER: cross-case pattern intelligence lives at the dashboard level -->
+  <section class="locked reveal">
+    <div class="locked-blur">
+      <div class="lb-row"><span class="lb-bar" style="width:82%"></span><span class="lb-tag">Provider A</span></div>
+      <div class="lb-row"><span class="lb-bar" style="width:64%"></span><span class="lb-tag">Provider B</span></div>
+      <div class="lb-row"><span class="lb-bar" style="width:47%"></span><span class="lb-tag">Provider C</span></div>
+      <div class="lb-row"><span class="lb-bar" style="width:73%"></span><span class="lb-tag">Provider D</span></div>
+    </div>
+    <div class="locked-overlay">
+      <span class="locked-icon">🔒</span>
+      <p class="locked-title">Population intelligence</p>
+      <p class="locked-desc">Cross-case pattern detection on quality of care, responsiveness, and access — across providers, insurers, and patient groups.</p>
+      <span class="locked-cta">Available to investors under NDA</span>
+    </div>
+  </section>
+
+  <footer>Synthetic demo data · One patient · One case · End to end</footer>
+
+</div>
+</body>
+</html>
