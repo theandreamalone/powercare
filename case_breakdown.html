@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Breakdown — Maria Alvarez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16211d;
+    --muted:#586a63;
+    --paper:#e7ebe6;
+    --card:#ffffff;
+    --teal:#0e6e63;
+    --teal-deep:#0a3d38;
+    --amber:#9a4f12;
+    --amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;
+    --mist:#d3dbd4;
+    --rule:#cdd6cf;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{
+    max-width:860px;
+    margin:0 auto;
+    padding:28px 22px 80px;
+  }
+
+  .mono{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.04em;
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--rule);
+  }
+  .brand{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal-deep);
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--teal);
+    box-shadow:0 0 0 4px var(--teal-soft);
+  }
+  .status-pill{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:6px 12px;
+    border-radius:999px;
+    background:var(--amber-soft);
+    color:var(--amber);
+    border:1px solid #e6cdb2;
+    white-space:nowrap;
+  }
+  .inbox-link{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;white-space:nowrap;
+  }
+  .inbox-link:hover{color:var(--teal-deep);}
+  .topbar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;}
+  .crumb{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+    color:var(--muted);margin:14px 0 0;text-transform:uppercase;
+  }
+  .crumb-sep{color:var(--mist);margin:0 4px;}
+
+  /* ---- hero ---- */
+  .hero{
+    background:var(--teal-deep);
+    color:#eef4f2;
+    border-radius:16px;
+    padding:30px 30px 26px;
+    margin-top:22px;
+  }
+  .hero .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:#8fc3ba;
+    margin:0 0 14px;
+  }
+  .hero h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,4.6vw,38px);
+    line-height:1.08;
+    margin:0 0 14px;
+    letter-spacing:-.01em;
+  }
+  .hero .summary{
+    font-size:15px;
+    color:#cfe0db;
+    margin:0 0 24px;
+    max-width:60ch;
+  }
+  .hero-facts{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    gap:14px;
+  }
+  .fact{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:11px;
+    padding:15px 16px;
+  }
+  .fact .k{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:#8fc3ba;
+    margin:0 0 7px;
+  }
+  .fact .v{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:500;
+    font-size:19px;
+    line-height:1.2;
+  }
+  .fact .sub{font-size:12.5px;color:#b7ccc6;margin-top:3px;}
+  .fact.risk{
+    background:rgba(154,79,18,.20);
+    border-color:rgba(214,150,90,.4);
+  }
+  .fact.risk .k{color:#e9b98d;}
+  .fact.risk .v{color:#f2d9c2;font-size:15px;font-weight:500;font-family:"IBM Plex Sans",sans-serif;line-height:1.35;}
+  .source-line{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin-top:18px;padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.12);
+    font-size:13px;color:#cfe0db;text-decoration:none;
+  }
+  .source-line:hover{color:#fff;}
+  .source-k{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:#8fc3ba;
+  }
+
+  /* ---- agent action card ---- */
+  .agent{
+    position:relative;margin-top:16px;border-radius:14px;overflow:hidden;
+    background:linear-gradient(135deg,#0e6e63 0%,#0a3d38 100%);
+  }
+  .agent-glow{
+    position:absolute;top:-40%;right:-10%;width:320px;height:320px;
+    background:radial-gradient(circle,rgba(143,195,186,.35) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .agent-inner{position:relative;padding:22px 24px;color:#eef4f2;}
+  .agent-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .agent-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+    padding:5px 11px;border-radius:999px;color:#dff0eb;
+  }
+  .agent-pulse{
+    width:8px;height:8px;border-radius:50%;background:#7ff0d8;
+    box-shadow:0 0 0 0 rgba(127,240,216,.7);
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .agent-pulse{animation:pulse 2s infinite;}
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(127,240,216,.6);}
+      70%{box-shadow:0 0 0 8px rgba(127,240,216,0);}
+      100%{box-shadow:0 0 0 0 rgba(127,240,216,0);}
+    }
+  }
+  .agent-sub{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:#9fc7c0;}
+  .agent-action{
+    font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:18px;line-height:1.4;
+    margin:0 0 16px;max-width:62ch;
+  }
+  .agent-draft{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+    border-radius:10px;padding:14px 16px;margin-bottom:16px;
+  }
+  .agent-draft-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px;}
+  .adh-to{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#9fc7c0;}
+  .agent-draft-head .stamp{
+    background:rgba(154,79,18,.28);border-color:rgba(233,185,141,.5);color:#f0cba6;
+  }
+  .agent-draft-body{font-size:14px;line-height:1.6;margin:0;color:#e6f1ee;}
+  .agent-meta{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:18px;}
+  .am{display:flex;flex-direction:column;gap:3px;}
+  .am-k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8fc3ba;}
+  .am-v{font-size:14px;font-weight:600;color:#eef4f2;}
+  .agent-gate{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .agent-gate .btn-primary{background:#fff;color:var(--teal-deep);}
+  .agent-gate .btn-primary:hover{background:#ddf0eb;}
+  .agent-gate .btn-ghost{border-color:rgba(255,255,255,.3);color:#eef4f2;}
+  .agent-gate .btn-ghost:hover{background:rgba(255,255,255,.1);}
+  .agent-lock{font-size:12.5px;color:#9fc7c0;display:flex;align-items:center;gap:6px;}
+  .agent-confirm{
+    display:none;margin-top:16px;padding:13px 15px;border-radius:9px;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    font-size:13.5px;color:#dff0eb;
+  }
+  .agent-confirm.show{display:block;}
+
+  /* ---- accountability spine ---- */
+  .spine{margin-top:30px;}
+  .spine-head{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 4px;
+  }
+  .step{
+    display:grid;
+    grid-template-columns:52px 1fr;
+    gap:8px;
+    padding:22px 0;
+    border-bottom:1px solid var(--rule);
+    align-items:start;
+  }
+  .step .num{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--teal);
+    padding-top:2px;
+  }
+  .step .label{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 8px;
+  }
+  .step .body{font-size:15.5px;margin:0;max-width:62ch;}
+  .owner-name{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--ink);
+    margin:0 0 8px;
+  }
+  .evidence{
+    background:var(--teal-soft);
+    border-left:3px solid var(--teal);
+    border-radius:0 8px 8px 0;
+    padding:11px 14px;
+    font-size:14px;
+    color:#234a44;
+    margin-top:12px;
+    max-width:62ch;
+  }
+  .evidence .tag{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--teal);
+    display:block;
+    margin-bottom:4px;
+  }
+
+  /* ---- signal summary ---- */
+  .signals{margin-top:34px;}
+  .section-title{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:.01em;
+    margin:0 0 4px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-title .hint{
+    font-family:"IBM Plex Sans",sans-serif;
+    font-weight:400;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .signal-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:16px;
+  }
+  .signal{
+    background:var(--card);
+    border:1px solid var(--mist);
+    border-radius:11px;
+    padding:15px 16px;
+  }
+  .signal .k{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    margin:0 0 8px;
+    display:flex;align-items:center;gap:7px;
+  }
+  .signal .k::before{content:"";width:8px;height:8px;border-radius:2px;}
+  .signal.support .k{color:var(--teal);}
+  .signal.support .k::before{background:var(--teal);}
+  .signal.conflict .k{color:var(--amber);}
+  .signal.conflict .k::before{background:var(--amber);}
+  .signal.missing .k{color:#4a5b76;}
+  .signal.missing .k::before{background:#4a5b76;}
+  .signal.quality .k{color:var(--muted);}
+  .signal.quality .k::before{background:var(--muted);}
+  .signal p{margin:0;font-size:14px;}
+
+  /* ---- accountability chain ---- */
+  .chain{margin-top:34px;}
+  .rail{margin-top:18px;position:relative;}
+  .node{
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:16px;
+    position:relative;
+    padding-bottom:8px;
+  }
+  .node-mark{
+    display:flex;justify-content:center;
+    position:relative;
+  }
+  /* connecting rail line */
+  .node:not(:last-child) .node-mark::after{
+    content:"";
+    position:absolute;
+    top:22px;bottom:-8px;left:50%;
+    width:2px;margin-left:-1px;
+    background:var(--mist);
+  }
+  .node-dot{
+    width:16px;height:16px;border-radius:50%;
+    background:var(--card);
+    border:3px solid var(--mist);
+    margin-top:6px;z-index:1;
+  }
+  .node-body{
+    background:var(--card);
+    border:1px solid var(--mist);
+    border-radius:11px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .node-role{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 5px;
+  }
+  .node-name{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:17px;margin:0 0 6px;color:var(--ink);
+  }
+  .node-desc{font-size:13.5px;color:var(--muted);margin:0;max-width:58ch;}
+
+  /* current owner — teal emphasis */
+  .node.current .node-dot{border-color:var(--teal);background:var(--teal);}
+  .node.current .node-body{border-color:var(--teal);background:var(--teal-soft);}
+  .node.current .node-role{color:var(--teal);}
+  .node.current .node-name{color:var(--teal-deep);}
+  .node.current .node-desc{color:#2c534b;}
+
+  /* blocking step — amber emphasis */
+  .node.blocked .node-dot{border-color:var(--amber);background:var(--amber);}
+  .node.blocked .node-body{border-color:#e0c3a4;background:var(--amber-soft);}
+  .node.blocked .node-role{color:var(--amber);}
+  .node.blocked .node-name{color:var(--amber);}
+  .node.blocked .node-desc{color:#7a4a1e;}
+
+  /* ---- escalation ladder ---- */
+  .ladder-section{margin-top:34px;}
+  .deadline-bar{
+    display:flex;align-items:center;gap:18px;
+    background:var(--teal-deep);color:#eef4f2;
+    border-radius:12px;padding:16px 20px;margin-top:16px;
+  }
+  .deadline-item{display:flex;flex-direction:column;gap:3px;}
+  .dl-k{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:#8fc3ba;
+  }
+  .dl-v{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:17px;}
+  .deadline-item.urgent .dl-k{color:#e9b98d;}
+  .deadline-item.urgent .dl-v{color:#f2d9c2;}
+  .deadline-sep{width:1px;align-self:stretch;background:rgba(255,255,255,.15);}
+
+  .ladder{margin-top:18px;}
+  .rung{
+    display:grid;grid-template-columns:40px 1fr;gap:14px;
+    position:relative;padding-bottom:6px;
+  }
+  .rung-step{
+    display:flex;align-items:flex-start;justify-content:center;
+    position:relative;
+  }
+  .rung-step{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;
+    color:var(--muted);
+  }
+  .rung-step::before{
+    content:"";position:absolute;top:0;width:32px;height:32px;border-radius:50%;
+    background:var(--card);border:2px solid var(--mist);z-index:0;
+  }
+  .rung-step{padding-top:7px;}
+  .rung-step span,.rung-step{z-index:1;}
+  /* vertical connector */
+  .rung:not(:last-child) .rung-step::after{
+    content:"";position:absolute;top:32px;bottom:-6px;left:50%;
+    width:2px;margin-left:-1px;background:var(--mist);z-index:0;
+  }
+  .rung-body{
+    background:var(--card);border:1px solid var(--mist);border-radius:11px;
+    padding:15px 17px;margin-bottom:12px;
+  }
+  .rung.active .rung-body{border-color:var(--teal);background:var(--teal-soft);}
+  .rung.active .rung-step{color:#fff;}
+  .rung.active .rung-step::before{background:var(--teal);border-color:var(--teal);}
+  .rung-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:9px;}
+  .rung-who{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;margin:0;color:var(--ink);
+  }
+  .rung-status{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);border:1px solid var(--mist);border-radius:999px;padding:4px 9px;white-space:nowrap;
+  }
+  .rung-status.now{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .rung-action{font-size:14px;margin:0 0 10px;color:var(--ink);max-width:60ch;}
+  .rung-lever{
+    font-size:13px;margin:0 0 10px;color:#2c534b;
+    background:rgba(14,110,99,.06);border-radius:8px;padding:9px 12px;max-width:60ch;
+  }
+  .rung.active .rung-lever{background:rgba(255,255,255,.55);}
+  .lever-k{
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--teal);display:block;margin-bottom:3px;
+  }
+  .rung-evidence{
+    font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);margin:0;
+    display:flex;align-items:center;gap:7px;
+  }
+  .ev-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+  .ladder-foot{
+    display:flex;align-items:center;gap:8px;margin-top:14px;
+    font-size:13px;color:var(--amber);
+  }
+
+  /* ---- timeline ---- */
+  .timeline-section{margin-top:34px;}
+  .timeline{margin-top:18px;}
+  .tl-event{display:grid;grid-template-columns:28px 1fr;gap:14px;position:relative;}
+  .tl-mark{display:flex;justify-content:center;position:relative;}
+  .tl-dot{
+    width:13px;height:13px;border-radius:50%;background:var(--card);
+    border:3px solid var(--teal);margin-top:5px;z-index:1;
+  }
+  .tl-event:not(:last-child) .tl-mark::after{
+    content:"";position:absolute;top:18px;bottom:-6px;left:50%;
+    width:2px;margin-left:-1px;background:var(--mist);
+  }
+  .tl-body{padding-bottom:20px;}
+  .tl-date{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+    color:var(--muted);text-transform:uppercase;
+  }
+  .tl-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15.5px;margin:4px 0 4px;color:var(--ink);}
+  .tl-desc{font-size:13.5px;color:var(--muted);margin:0;max-width:60ch;}
+  .tl-link{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--teal);
+    text-decoration:none;display:inline-block;margin-top:6px;
+  }
+  .tl-link:hover{color:var(--teal-deep);}
+  .tl-event.flag .tl-dot{border-color:var(--amber);background:var(--amber);}
+  .tl-event.flag .tl-title{color:var(--amber);}
+  .tl-event.pending .tl-dot{border-color:var(--teal);background:var(--teal);}
+
+  /* ---- open items ---- */
+  .open-items{
+    display:flex;gap:12px;margin-top:30px;flex-wrap:wrap;
+  }
+  .stat{
+    flex:1;min-width:150px;
+    background:var(--card);
+    border:1px solid var(--mist);
+    border-radius:11px;
+    padding:16px 18px;
+    display:flex;align-items:baseline;gap:12px;
+  }
+  .stat .n{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;font-size:30px;color:var(--teal-deep);
+  }
+  .stat .l{font-size:13.5px;color:var(--muted);}
+
+  /* ---- draft message ---- */
+  .draft{
+    margin-top:34px;
+    background:var(--card);
+    border:1px solid var(--mist);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .draft-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 20px;
+    border-bottom:1px solid var(--rule);
+    background:#f4f7f4;
+  }
+  .draft-head .t{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;
+  }
+  .stamp{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--amber);
+    border:1px solid #e0c3a4;
+    background:var(--amber-soft);
+    padding:5px 11px;border-radius:999px;white-space:nowrap;
+  }
+  .draft-body{padding:20px;}
+  .draft-to{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);
+    margin:0 0 12px;
+  }
+  .draft-text{
+    font-size:15px;line-height:1.6;margin:0;
+    padding:16px 18px;background:#f7f9f7;border-radius:9px;
+    border:1px solid var(--rule);
+  }
+  .gate{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:16px 20px;border-top:1px solid var(--rule);
+    background:#faf7f2;
+  }
+  .gate-note{
+    font-size:13px;color:var(--amber);flex:1;min-width:220px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .gate-note .lock{font-size:14px;}
+  .btn{
+    font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13.5px;
+    padding:10px 18px;border-radius:9px;cursor:pointer;border:1px solid transparent;
+  }
+  .btn-ghost{background:transparent;border-color:var(--mist);color:var(--ink);}
+  .btn-ghost:hover{background:#eef2ee;}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+
+  .confirm{
+    margin:0 20px 18px;padding:12px 15px;border-radius:9px;
+    background:var(--teal-soft);border:1px solid #a9d2c9;color:#23483f;
+    font-size:13.5px;display:none;
+  }
+  .confirm.show{display:block;}
+
+  footer{
+    margin-top:40px;text-align:center;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+    color:var(--muted);
+  }
+
+  /* ---- locked teaser ---- */
+  .locked{
+    position:relative;margin-top:34px;border-radius:14px;overflow:hidden;
+    border:1px solid var(--mist);min-height:200px;
+  }
+  .locked-blur{
+    padding:26px 24px;filter:blur(5px);opacity:.55;background:var(--card);
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .lb-row{display:flex;align-items:center;gap:14px;}
+  .lb-bar{height:22px;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--teal-soft));}
+  .lb-tag{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);}
+  .locked-overlay{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;
+    background:linear-gradient(180deg,rgba(231,235,230,.72),rgba(231,235,230,.9));
+  }
+  .locked-icon{font-size:22px;margin-bottom:10px;}
+  .locked-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:var(--teal-deep);}
+  .locked-desc{font-size:13.5px;color:var(--muted);margin:0 0 14px;max-width:46ch;}
+  .locked-cta{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--amber);border:1px solid #e0c3a4;background:var(--amber-soft);
+    padding:7px 14px;border-radius:999px;
+  }
+
+  /* ---- signal summary trigger + fly-out ---- */
+  .signals-trigger{margin-top:30px;}
+  .evidence-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:16px 20px;cursor:pointer;text-align:left;font-family:inherit;
+    transition:border-color .15s,background .15s;
+  }
+  .evidence-btn:hover{border-color:var(--teal);background:#f2f6f2;}
+  .evidence-btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .eb-left{display:flex;align-items:center;gap:14px;}
+  .eb-icon{
+    font-size:18px;color:var(--teal);background:var(--teal-soft);
+    width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .eb-text{display:flex;flex-direction:column;gap:2px;}
+  .eb-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;color:var(--ink);}
+  .eb-sub{font-size:12.5px;color:var(--muted);}
+  .eb-arrow{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--teal);white-space:nowrap;flex-shrink:0;
+  }
+
+  .flyout-backdrop{
+    position:fixed;inset:0;background:rgba(16,33,29,.5);
+    opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;z-index:40;
+  }
+  .flyout-backdrop.show{opacity:1;visibility:visible;}
+  .flyout{
+    position:fixed;top:0;right:0;height:100%;width:min(440px,92vw);
+    background:var(--paper);z-index:50;
+    box-shadow:-8px 0 40px rgba(16,33,29,.2);
+    transform:translateX(100%);transition:transform .28s ease;
+    display:flex;flex-direction:column;padding:26px 24px;overflow-y:auto;
+  }
+  .flyout.show{transform:translateX(0);}
+  .flyout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:8px;}
+  .flyout-eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 6px;
+  }
+  .flyout-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:20px;margin:0;}
+  .flyout-close{
+    background:none;border:1px solid var(--mist);border-radius:8px;
+    width:34px;height:34px;font-size:14px;cursor:pointer;color:var(--muted);flex-shrink:0;
+  }
+  .flyout-close:hover{background:var(--card);color:var(--ink);}
+  .flyout-intro{font-size:13.5px;color:var(--muted);margin:0 0 20px;line-height:1.55;}
+  .flyout-body{display:flex;flex-direction:column;gap:12px;}
+  @media (prefers-reduced-motion:reduce){
+    .flyout{transition:none;}
+    .flyout-backdrop{transition:none;}
+  }
+
+  /* reveal */
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{opacity:0;transform:translateY(10px);animation:rise .6s ease forwards;}
+    .reveal:nth-child(1){animation-delay:.02s;}
+    .reveal:nth-child(2){animation-delay:.10s;}
+    .reveal:nth-child(3){animation-delay:.18s;}
+    .reveal:nth-child(4){animation-delay:.26s;}
+    .reveal:nth-child(5){animation-delay:.34s;}
+    .reveal:nth-child(6){animation-delay:.42s;}
+    @keyframes rise{to{opacity:1;transform:none;}}
+  }
+
+  @media (max-width:620px){
+    .hero-facts{grid-template-columns:1fr;}
+    .signal-grid{grid-template-columns:1fr;}
+    .step{grid-template-columns:38px 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar reveal">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <div class="topbar-right">
+      <a class="inbox-link" href="dashboard.html">← Dashboard</a>
+      <span class="status-pill">Contradiction found</span>
+      <a class="inbox-link" href="inbox.html">View source inbox →</a>
+    </div>
+  </div>
+
+  <p class="crumb reveal">Dashboard <span class="crumb-sep">/</span> Case breakdown</p>
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <p class="eyebrow">Case breakdown · Maria Alvarez</p>
+    <h1>Two providers disagree on whether records were sent</h1>
+    <p class="summary">The records department says Maria's records went to cardiology on June 28. Cardiology says they never arrived — confirmed by Maria's own call. The system cross-checked both sources and flagged the contradiction. Her appointment is days away.</p>
+    <div class="hero-facts">
+      <div class="fact">
+        <p class="k">Responsible party · owns the next step</p>
+        <div class="v">Records department</div>
+        <div class="sub">Not blame — who owns moving this forward.</div>
+      </div>
+      <div class="fact risk">
+        <p class="k">Risk if unresolved</p>
+        <div class="v">Appointment may be delayed or wasted without confirmed records.</div>
+      </div>
+    </div>
+    <a class="source-line" href="inbox.html">
+      <span class="source-k">Generated from</span>
+      Records department email · June 30 · + patient voice memo →
+    </a>
+  </section>
+
+  <!-- AGENT ACTION CARD -->
+  <section class="agent reveal">
+    <div class="agent-glow"></div>
+    <div class="agent-inner">
+      <div class="agent-head">
+        <span class="agent-badge"><span class="agent-pulse"></span> Agent</span>
+        <span class="agent-sub">I act for you — once you approve</span>
+      </div>
+      <p class="agent-action">On your approval, I'll send this follow-up to the records department, then track the reply. If no proof of sending comes back by July 8, I'll prepare the next escalation for you.</p>
+
+      <div class="agent-draft">
+        <div class="agent-draft-head">
+          <span class="adh-to">To: Records department · Primary Care Associates</span>
+          <span class="stamp">Draft — not sent</span>
+        </div>
+        <p class="agent-draft-body">Hello, I'm following up on records requested for Maria Alvarez's upcoming cardiology appointment. Your office noted the records were sent on June 28, but cardiology has no record of receiving them. Could you provide proof of sending — date, method, destination, and confirmation number — so we can locate them? Thank you.</p>
+      </div>
+
+      <div class="agent-meta">
+        <div class="am"><span class="am-k">Channel</span><span class="am-v">Email + phone follow-up</span></div>
+        <div class="am"><span class="am-k">Attaches</span><span class="am-v">June 30 email · call log</span></div>
+        <div class="am"><span class="am-k">Then</span><span class="am-v">Tracks reply · escalates if silent</span></div>
+      </div>
+
+      <div class="agent-gate">
+        <button class="btn btn-primary" type="button" onclick="document.getElementById('agent-confirm').classList.add('show')">Approve — agent sends &amp; tracks</button>
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('agent-confirm').classList.toggle('show')">Edit draft first</button>
+        <span class="agent-lock"><span class="lock">🔒</span> I do nothing until you approve.</span>
+      </div>
+      <div class="agent-confirm" id="agent-confirm">Once you approve, I'll act on your behalf: I'll send the follow-up, log it as evidence, and watch for a reply. If none arrives by July 8, I'll draft the formal complaint to the records supervisor — then wait for your approval again before sending. I never escalate on my own.</div>
+    </div>
+  </section>
+
+    <div class="step">
+      <div class="num">01</div>
+      <div>
+        <p class="label">The contradiction found</p>
+        <p class="body">Records department states the records were sent on June 28. Cardiology intake and Maria's own call both confirm they never arrived. Two sources directly disagree, and no proof of delivery exists to settle it.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">02</div>
+      <div>
+        <p class="label">Who owns the next step</p>
+        <p class="owner-name">Records department</p>
+        <div class="evidence">
+          <span class="tag">Supporting signals</span>
+          They claim the records were sent, so they hold the proof of sending. They should provide send confirmation and destination details.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">03</div>
+      <div>
+        <p class="label">Risk if unresolved</p>
+        <p class="body">The cardiology appointment may be delayed or wasted if records are not confirmed before the visit. A delay in cardiac evaluation is the underlying risk.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">04</div>
+      <div>
+        <p class="label">What happens next</p>
+        <p class="body">Request send confirmation from the records department: date, method, destination fax or address, and confirmation number. At the same time, ask cardiology to check intake for received records.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIGNAL SUMMARY TRIGGER -->
+  <section class="signals-trigger reveal">
+    <button class="evidence-btn" type="button" onclick="openSignals()">
+      <span class="eb-left">
+        <span class="eb-icon">◧</span>
+        <span class="eb-text">
+          <span class="eb-title">Why the system flagged this</span>
+          <span class="eb-sub">Signal summary — supporting, conflicting, missing info, data quality</span>
+        </span>
+      </span>
+      <span class="eb-arrow">View evidence →</span>
+    </button>
+  </section>
+
+  <!-- ACCOUNTABILITY CHAIN -->
+  <section class="chain reveal">
+    <h2 class="section-title">Accountability chain <span class="hint">where ownership sits, and where it's stuck</span></h2>
+    <div class="rail">
+
+      <div class="node current">
+        <div class="node-mark"><span class="node-dot"></span></div>
+        <div class="node-body">
+          <p class="node-role">Current owner</p>
+          <p class="node-name">Records department</p>
+          <p class="node-desc">Owns proving the records were sent — they hold the send confirmation and destination details.</p>
+        </div>
+      </div>
+
+      <div class="node blocked">
+        <div class="node-mark"><span class="node-dot"></span></div>
+        <div class="node-body">
+          <p class="node-role">Blocking step</p>
+          <p class="node-name">No proof of delivery exists</p>
+          <p class="node-desc">The claim that records were sent cannot be verified. Nothing moves forward until this is resolved.</p>
+        </div>
+      </div>
+
+      <div class="node next">
+        <div class="node-mark"><span class="node-dot"></span></div>
+        <div class="node-body">
+          <p class="node-role">Next owner</p>
+          <p class="node-name">Cardiology intake</p>
+          <p class="node-desc">Owns confirming whether the records arrived, once send details are provided.</p>
+        </div>
+      </div>
+
+      <div class="node escalation">
+        <div class="node-mark"><span class="node-dot"></span></div>
+        <div class="node-body">
+          <p class="node-role">Escalation path</p>
+          <p class="node-name">Records supervisor</p>
+          <p class="node-desc">If unresolved before the appointment, ownership moves up to the records supervisor.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ESCALATION LADDER -->
+  <section class="ladder-section reveal">
+    <h2 class="section-title">Escalation path <span class="hint">what happens if the owner doesn't act — and the lever you pull</span></h2>
+
+    <div class="deadline-bar">
+      <div class="deadline-item">
+        <span class="dl-k">Appointment</span>
+        <span class="dl-v">July 9</span>
+      </div>
+      <div class="deadline-sep"></div>
+      <div class="deadline-item urgent">
+        <span class="dl-k">Records must be confirmed by</span>
+        <span class="dl-v">July 8 · in 1 day</span>
+      </div>
+    </div>
+
+    <div class="ladder">
+
+      <div class="rung active">
+        <div class="rung-step">1</div>
+        <div class="rung-body">
+          <div class="rung-top">
+            <p class="rung-who">Records department</p>
+            <span class="rung-status now">Current step</span>
+          </div>
+          <p class="rung-action">Send a documented follow-up requesting proof of sending: date, method, destination, and confirmation number.</p>
+          <p class="rung-lever"><span class="lever-k">Your lever</span> If they can't produce proof, that failure becomes the evidence for the next rung.</p>
+          <p class="rung-evidence"><span class="ev-dot"></span> Attached: June 30 email · Maria's call log</p>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rung-step">2</div>
+        <div class="rung-body">
+          <div class="rung-top">
+            <p class="rung-who">Records supervisor</p>
+            <span class="rung-status">If no proof by July 8</span>
+          </div>
+          <p class="rung-action">File a formal written complaint citing the unanswered follow-up request.</p>
+          <p class="rung-lever"><span class="lever-k">Your lever</span> A documented, ignored request. The supervisor now owns a formal complaint on record.</p>
+          <p class="rung-evidence"><span class="ev-dot"></span> Evidence trail: follow-up sent + no response logged</p>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rung-step">3</div>
+        <div class="rung-body">
+          <div class="rung-top">
+            <p class="rung-who">Office manager · Patient relations</p>
+            <span class="rung-status">If supervisor doesn't resolve</span>
+          </div>
+          <p class="rung-action">Escalate as a pattern of non-response. Request a written resolution timeline.</p>
+          <p class="rung-lever"><span class="lever-k">Your lever</span> The full chain of ignored requests shows a pattern, not a one-off. That pattern is what patient relations must answer for.</p>
+          <p class="rung-evidence"><span class="ev-dot"></span> Evidence trail: every logged contact and non-response</p>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rung-step">4</div>
+        <div class="rung-body">
+          <div class="rung-top">
+            <p class="rung-who">State medical board · Health department</p>
+            <span class="rung-status">If the practice fails to act</span>
+          </div>
+          <p class="rung-action">File a formal complaint for a records-access failure, with the full documented trail.</p>
+          <p class="rung-lever"><span class="lever-k">Your lever</span> A regulator with authority over the practice. Framed as a records-access concern requiring review — supported by evidence, not an accusation.</p>
+          <p class="rung-evidence"><span class="ev-dot"></span> Evidence package: complete timeline, all communications, non-responses</p>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rung-step">5</div>
+        <div class="rung-body">
+          <div class="rung-top">
+            <p class="rung-who">Patient-rights attorney</p>
+            <span class="rung-status">If access is denied and care is harmed</span>
+          </div>
+          <p class="rung-action">Consult an attorney. I'll prepare the evidence package; I don't make a legal claim.</p>
+          <p class="rung-lever"><span class="lever-k">Your lever</span> A complete, timestamped evidence trail ready for review. Framed as a consultation on records access — supporting and conflicting signals preserved.</p>
+          <p class="rung-evidence"><span class="ev-dot"></span> Evidence package: court-ready timeline and source documents</p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="ladder-foot"><span class="lock">🔒</span> I draft every escalation for your review. I file or send nothing without your approval.</p>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section reveal">
+    <h2 class="section-title">Case timeline <span class="hint">what has happened, in order</span></h2>
+    <div class="timeline">
+
+      <div class="tl-event">
+        <div class="tl-mark"><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <span class="tl-date">June 26</span>
+          <p class="tl-title">Records requested</p>
+          <p class="tl-desc">Primary care records requested for the upcoming cardiology appointment.</p>
+        </div>
+      </div>
+
+      <div class="tl-event">
+        <div class="tl-mark"><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <span class="tl-date">June 30</span>
+          <p class="tl-title">Records department: "already sent"</p>
+          <p class="tl-desc">Email states records were sent to cardiology on June 28. No proof of delivery included.</p>
+          <a class="tl-link" href="inbox.html">View source →</a>
+        </div>
+      </div>
+
+      <div class="tl-event">
+        <div class="tl-mark"><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <span class="tl-date">July 1</span>
+          <p class="tl-title">Maria's voice memo</p>
+          <p class="tl-desc">Maria reports cardiology has nothing on file, and she doesn't know who to call. Patient-side confirmation of the breakdown.</p>
+          <a class="tl-link" href="inbox.html">View source →</a>
+        </div>
+      </div>
+
+      <div class="tl-event flag">
+        <div class="tl-mark"><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <span class="tl-date">July 1</span>
+          <p class="tl-title">Contradiction detected</p>
+          <p class="tl-desc">System cross-checked both sources: records department says sent, cardiology says not received. Care gap and responsible party assigned.</p>
+        </div>
+      </div>
+
+      <div class="tl-event pending">
+        <div class="tl-mark"><span class="tl-dot"></span></div>
+        <div class="tl-body">
+          <span class="tl-date">Now</span>
+          <p class="tl-title">Awaiting your approval</p>
+          <p class="tl-desc">I'm ready to place the documented follow-up. Deadline to confirm records: July 8.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- OPEN ITEMS -->
+  <section class="open-items reveal">
+    <div class="stat"><span class="n">1</span><span class="l">Open care gap<br>Records not received by cardiology</span></div>
+    <div class="stat"><span class="n">1</span><span class="l">Open task<br>Confirm records sent and received</span></div>
+  </section>
+
+  <footer>Synthetic demo data · One patient · One case · End to end</footer>
+
+</div>
+
+<!-- SIGNAL SUMMARY FLY-OUT -->
+<div class="flyout-backdrop" id="signals-backdrop" onclick="closeSignals()"></div>
+<aside class="flyout" id="signals-flyout" role="dialog" aria-label="Signal summary" aria-modal="true">
+  <div class="flyout-head">
+    <div>
+      <p class="flyout-eyebrow">Signal summary</p>
+      <h2 class="flyout-title">Why the system flagged this</h2>
+    </div>
+    <button class="flyout-close" type="button" onclick="closeSignals()" aria-label="Close">✕</button>
+  </div>
+  <p class="flyout-intro">The system doesn't claim certainty. It shows what points each way, and where the picture is thin — so you decide with the full read.</p>
+  <div class="flyout-body">
+    <div class="signal support">
+      <p class="k">Supporting signals</p>
+      <p>Records department explicitly stated records were sent on a specific date. A prior records request exists on the case.</p>
+    </div>
+    <div class="signal conflict">
+      <p class="k">Conflicting signals</p>
+      <p>Cardiology has not acknowledged receipt. No proof of delivery exists to corroborate the sent claim.</p>
+    </div>
+    <div class="signal missing">
+      <p class="k">Missing information</p>
+      <p>No delivery confirmation, tracking number, or named sender. Destination not verified.</p>
+    </div>
+    <div class="signal quality">
+      <p class="k">Data quality</p>
+      <p>Based on one communication only. No delivery confirmation reviewed. Cardiology side not yet contacted.</p>
+    </div>
+  </div>
+</aside>
+
+<script>
+  function openSignals(){
+    document.getElementById('signals-backdrop').classList.add('show');
+    document.getElementById('signals-flyout').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSignals(){
+    document.getElementById('signals-backdrop').classList.remove('show');
+    document.getElementById('signals-flyout').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeSignals();
+  });
+</script>
+</body>
+</html>
