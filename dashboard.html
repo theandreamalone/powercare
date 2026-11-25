@@ -166,8 +166,10 @@
     .cc-facts{gap:16px;}
   }
 </style>
-</head>
-<body>
+<style>
+.pc-nav{background:#113f38;color:white;font:600 14px/1.4 system-ui;padding:14px max(4vw,18px);display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}.pc-nav strong{font:700 20px system-ui;margin-right:12px}.pc-nav a{color:#eef8f4;text-decoration:none;padding:5px 0}.pc-nav a:hover,.pc-nav a[aria-current]{text-decoration:underline;text-underline-offset:5px}.pc-nav a:focus-visible,.pc-actions a:focus-visible{outline:3px solid #edab4e;outline-offset:3px}.pc-summary{background:#fff;border:1px solid #becdc5;border-left:5px solid #197564;border-radius:14px;padding:clamp(20px,4vw,36px);margin:20px 0 28px;color:#18352f}.pc-summary h2{font:700 clamp(24px,4vw,36px)/1.12 system-ui;letter-spacing:-.035em;margin:8px 0 14px}.pc-summary p{max-width:64ch;line-height:1.55;margin:8px 0}.pc-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}.pc-actions a{color:#0a6457;font-weight:650}.pc-actions a:first-child{background:#105e52;color:white;border-radius:8px;padding:11px 16px;text-decoration:none}
+</style></head>
+<body><nav class="pc-nav" aria-label="Main navigation"><strong>PowerCare</strong><a href="dashboard.html" aria-current="page">Home</a><a href="case_breakdown.html">Cases</a><a href="inbox.html">Inbox</a><a href="care_checklist.html">Care checklist</a><a href="pill_tracking.html">Medications</a><a href="appointments.html">Appointments</a><a href="report_issue.html">Report an issue</a><a href="providers.html">Care team</a><a href="patient_profile.html">Health profile</a></nav>
 <div class="wrap">
 
   <div class="topbar reveal">
@@ -177,8 +179,8 @@
 
   <section class="hero reveal">
     <p class="eyebrow">Dashboard</p>
-    <h1>1 active case needs your attention</h1>
-    <p class="sub">Every case below shows what's missing, who owns the next step, and what happens if nothing moves. Open a case to see the full breakdown.</p>
+    <h1>What needs your attention</h1>
+    <p class="sub">One follow-up is ready for you to review.</p>
   </section>
 
   <div class="stat-row reveal">
@@ -188,32 +190,8 @@
     <div class="stat-card attn"><div class="n">1</div><div class="l">Draft awaiting approval</div></div>
   </div>
 
-  <h2 class="section-title reveal">Cases <span class="hint">sorted by what needs you first</span></h2>
-
-  <div class="case-list">
-    <a class="case-card reveal" href="case_breakdown.html">
-      <div class="cc-top">
-        <div>
-          <p class="cc-patient">Maria Alvarez · Patient</p>
-          <p class="cc-title">Two providers disagree on whether records were sent</p>
-        </div>
-        <span class="cc-status">Contradiction found</span>
-      </div>
-      <div class="cc-facts">
-        <div class="cc-fact"><span class="k">Responsible party</span><span class="v">Records department</span></div>
-        <div class="cc-fact"><span class="k">Risk level</span><span class="v">Moderate — appointment at risk</span></div>
-        <div class="cc-fact"><span class="k">Next action</span><span class="v">Awaiting your approval</span></div>
-      </div>
-      <div class="cc-foot">
-        <span class="cc-deadline">🕐 Records must be confirmed by July 8 · in 1 day</span>
-        <span class="cc-arrow">View case breakdown →</span>
-      </div>
-    </a>
-
-    <div class="add-case">More cases will appear here as they're added</div>
-  </div>
-
-  <!-- LOCKED TEASER: cross-case pattern intelligence lives at the dashboard level -->
+  <section class="pc-summary" aria-labelledby="summary-title"><p class="cc-patient">Maria Alvarez · Cardiology visit</p><h2 id="summary-title">Your cardiology office is still waiting for your records</h2><p>Your records office says it sent them on June 28. When you called cardiology, they couldn’t find them.</p><p><strong>What you can do today</strong><br>Review the message asking the records office for delivery confirmation. Cardiology needs to confirm receipt by July 8 so your visit can go ahead as planned.</p><div class="pc-actions"><a href="case_breakdown.html#review-draft">Review follow-up message</a><a href="inbox.html">See original messages</a><a href="case_breakdown.html">Full case details</a></div></section>
+<!-- LOCKED TEASER: cross-case pattern intelligence lives at the dashboard level -->
   <section class="locked reveal">
     <div class="locked-blur">
       <div class="lb-row"><span class="lb-bar" style="width:82%"></span><span class="lb-tag">Provider A</span></div>

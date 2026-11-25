@@ -134,8 +134,10 @@
     .stage-line{width:14px;}
   }
 </style>
-</head>
-<body>
+<style>
+.pc-nav{background:#113f38;color:white;font:600 14px/1.4 system-ui;padding:14px max(4vw,18px);display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}.pc-nav strong{font:700 20px system-ui;margin-right:12px}.pc-nav a{color:#eef8f4;text-decoration:none;padding:5px 0}.pc-nav a:hover,.pc-nav a[aria-current]{text-decoration:underline;text-underline-offset:5px}.pc-nav a:focus-visible,.pc-actions a:focus-visible{outline:3px solid #edab4e;outline-offset:3px}.pc-summary{background:#fff;border:1px solid #becdc5;border-left:5px solid #197564;border-radius:14px;padding:clamp(20px,4vw,36px);margin:20px 0 28px;color:#18352f}.pc-summary h2{font:700 clamp(24px,4vw,36px)/1.12 system-ui;letter-spacing:-.035em;margin:8px 0 14px}.pc-summary p{max-width:64ch;line-height:1.55;margin:8px 0}.pc-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}.pc-actions a{color:#0a6457;font-weight:650}.pc-actions a:first-child{background:#105e52;color:white;border-radius:8px;padding:11px 16px;text-decoration:none}
+</style></head>
+<body><nav class="pc-nav" aria-label="Main navigation"><strong>PowerCare</strong><a href="dashboard.html">Home</a><a href="case_breakdown.html">Cases</a><a href="inbox.html">Inbox</a><a href="care_checklist.html">Care checklist</a><a href="pill_tracking.html">Medications</a><a href="appointments.html" aria-current="page">Appointments</a><a href="report_issue.html">Report an issue</a><a href="providers.html">Care team</a><a href="patient_profile.html">Health profile</a></nav>
 <div class="wrap">
 
   <div class="topbar">
@@ -143,7 +145,7 @@
     <nav class="nav-links" aria-label="Site">
       <a href="care_checklist.html">Checklist</a>
       <a href="pill_tracking.html">Pills</a>
-      <a href="patient_dashboard.html">Case dashboard</a>
+      <a href="dashboard.html">Case dashboard</a>
       <a href="patient_profile.html">Profile</a>
     </nav>
   </div>
