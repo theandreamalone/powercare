@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appointments — Care Coordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  DESIGN NOTES (hidden) — database gaps flagged for this page:
+  1. No appointment_requests table. Needs: record_id, patient_id, provider FK,
+     requested_window text, reason text, status via workflow_taxonomy
+     (draft / awaiting approval / sent to office / office responded / confirmed /
+     declined), created_at, last_modified_at. This is the SAME table referenced
+     by care_checklist.html and pill_tracking.html refill flow — one request
+     pattern, taxonomy distinguishes request type.
+  2. No appointments table for confirmed appointments. Needs: record_id,
+     patient_id, provider FK, scheduled_at, location, status via taxonomy.
+     A confirmed appointment is created FROM an accepted request — keep the
+     provenance link (appointment.request_id FK).
+  3. Reminders share the missing reminders table flagged on care_checklist.html.
+  4. Booking is permanently out of scope. This page must never present a
+     pick-a-slot UI. Request → office → human approval → tracked response only.
+-->
+<style>
+  :root{
+    --ink:#16211d;--muted:#586a63;--paper:#e7ebe6;--card:#ffffff;
+    --teal:#0e6e63;--teal-deep:#0a3d38;--amber:#9a4f12;--amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;--mist:#d3dbd4;--rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);flex-wrap:wrap;}
+  .brand{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .nav-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .nav-links a{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;}
+  .nav-links a:hover{color:var(--teal-deep);}
+  .switcher{display:flex;gap:8px;margin-top:22px;}
+  .person-btn{display:flex;align-items:center;gap:10px;background:var(--card);
+    border:1px solid var(--mist);border-radius:999px;padding:8px 16px 8px 8px;cursor:pointer;
+    font-family:inherit;font-size:13.5px;font-weight:600;color:var(--muted);}
+  .person-btn .pav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;
+    color:#fff;background:var(--mist);}
+  .person-btn.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-deep);}
+  .person-btn.active .pav{background:var(--teal);}
+  .person-btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .head{margin:26px 0 0;}
+  .head h1{font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4vw,32px);margin:0 0 8px;letter-spacing:-.01em;}
+  .head p{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch;}
+  .section-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+  .section-title .hint{font-weight:400;font-size:12.5px;color:var(--muted);}
+
+  /* upcoming */
+  .upcoming{margin-top:28px;}
+  .appt{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+    background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:16px 18px;margin-top:12px;}
+  .appt-date{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--teal);background:var(--teal-soft);border-radius:9px;
+    padding:10px 12px;text-align:center;min-width:72px;line-height:1.4;}
+  .appt-title{font-weight:600;font-size:15px;margin:0 0 3px;}
+  .appt-sub{font-size:13px;color:var(--muted);margin:0;}
+  .appt-tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;
+    text-transform:uppercase;padding:4px 10px;border-radius:999px;
+    background:var(--teal-soft);color:var(--teal-deep);white-space:nowrap;}
+
+  /* request tracker */
+  .requests{margin-top:34px;}
+  .req-card{background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:18px;margin-top:12px;}
+  .req-top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    flex-wrap:wrap;margin-bottom:12px;}
+  .req-title{font-weight:600;font-size:15px;margin:0;}
+  .stage-row{display:flex;align-items:center;gap:0;margin:14px 0 6px;flex-wrap:wrap;row-gap:14px;}
+  .stage{display:flex;align-items:center;gap:8px;}
+  .stage-dot{width:14px;height:14px;border-radius:50%;background:var(--card);
+    border:3px solid var(--mist);flex-shrink:0;}
+  .stage-name{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .stage-line{width:26px;height:2px;background:var(--mist);margin:0 8px;flex-shrink:0;}
+  .stage.done .stage-dot{background:var(--teal);border-color:var(--teal);}
+  .stage.done .stage-name{color:var(--teal-deep);}
+  .stage.now .stage-dot{background:var(--amber);border-color:var(--amber);}
+  .stage.now .stage-name{color:var(--amber);font-weight:500;}
+  .req-note{font-size:13px;color:var(--muted);margin:10px 0 0;max-width:62ch;}
+  .req-note b{color:var(--ink);}
+  .req-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;}
+  .btn{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;
+    padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn-ghost{background:transparent;border-color:var(--mist);color:var(--ink);}
+  .btn-ghost:hover{background:#eef2ee;}
+  .btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .lock-note{font-size:12.5px;color:var(--amber);display:flex;align-items:center;gap:6px;}
+  .req-confirm{display:none;margin-top:12px;padding:11px 14px;border-radius:9px;
+    background:var(--teal-soft);border:1px solid #a9d2c9;font-size:13px;color:#23483f;}
+  .req-confirm.show{display:block;}
+  .req-draft{background:#f7f9f7;border:1px solid var(--rule);border-radius:9px;
+    padding:13px 15px;font-size:13.5px;line-height:1.6;margin-top:12px;color:var(--ink);}
+  .req-draft .to{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);
+    display:block;margin-bottom:6px;}
+
+  /* new request */
+  .new-req{margin-top:34px;background:var(--card);border:1px solid var(--mist);
+    border-radius:12px;padding:20px;}
+  .field{margin-top:14px;}
+  .field label{display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;}
+  .field select,.field input,.field textarea{
+    width:100%;font-family:inherit;font-size:14px;color:var(--ink);
+    background:#f7f9f7;border:1px solid var(--rule);border-radius:9px;padding:11px 13px;}
+  .field textarea{resize:vertical;min-height:74px;}
+  .field select:focus,.field input:focus,.field textarea:focus{
+    outline:3px solid #9fd0c8;outline-offset:1px;border-color:var(--teal);}
+  .field .fh{font-size:12.5px;color:var(--muted);margin-top:5px;}
+  .new-note{font-size:13px;color:var(--muted);margin:16px 0 0;display:flex;gap:8px;align-items:flex-start;}
+
+  footer{margin-top:40px;text-align:center;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--muted);}
+  @media (max-width:600px){
+    .appt{grid-template-columns:auto 1fr;}
+    .appt-tag{grid-column:2;justify-self:start;}
+    .stage-line{width:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <nav class="nav-links" aria-label="Site">
+      <a href="care_checklist.html">Checklist</a>
+      <a href="pill_tracking.html">Pills</a>
+      <a href="patient_dashboard.html">Case dashboard</a>
+      <a href="patient_profile.html">Profile</a>
+    </nav>
+  </div>
+
+  <div class="switcher" role="tablist" aria-label="Person">
+    <button class="person-btn active" id="btn-maria" role="tab" aria-selected="true" onclick="switchPerson('maria')">
+      <span class="pav">MA</span> Maria Alvarez
+    </button>
+    <button class="person-btn" id="btn-robert" role="tab" aria-selected="false" onclick="switchPerson('robert')">
+      <span class="pav">RA</span> Robert Alvarez
+    </button>
+  </div>
+
+  <div class="head">
+    <h1>Appointments</h1>
+    <p>Confirmed visits and appointment requests in flight. I don't book slots — I send a request to the office, track their reply, and confirm only when the office does.</p>
+  </div>
+
+  <!-- ============ MARIA ============ -->
+  <div id="person-maria">
+
+    <section class="upcoming">
+      <h2 class="section-title">Upcoming <span class="hint">confirmed by the office</span></h2>
+      <div class="appt">
+        <div class="appt-date">Jul 9<br>2:30 PM</div>
+        <div>
+          <p class="appt-title">Cardiology — Dr. Adaeze Okafor</p>
+          <p class="appt-sub">Riverbend Cardiology · 410 Meridian Ave, Suite 220 · Bring current medication list</p>
+        </div>
+        <span class="appt-tag">Confirmed</span>
+      </div>
+    </section>
+
+    <section class="requests">
+      <h2 class="section-title">Requests in flight <span class="hint">where each one stands</span></h2>
+
+      <div class="req-card">
+        <div class="req-top">
+          <p class="req-title">Annual wellness visit — Primary Care Associates</p>
+        </div>
+        <div class="stage-row">
+          <span class="stage done"><span class="stage-dot"></span><span class="stage-name">Drafted</span></span>
+          <span class="stage-line"></span>
+          <span class="stage now"><span class="stage-dot"></span><span class="stage-name">Your approval</span></span>
+          <span class="stage-line"></span>
+          <span class="stage"><span class="stage-dot"></span><span class="stage-name">Sent to office</span></span>
+          <span class="stage-line"></span>
+          <span class="stage"><span class="stage-dot"></span><span class="stage-name">Office response</span></span>
+          <span class="stage-line"></span>
+          <span class="stage"><span class="stage-dot"></span><span class="stage-name">Confirmed</span></span>
+        </div>
+        <div class="req-draft">
+          <span class="to">To: Scheduling · Primary Care Associates</span>
+          Hello, I'd like to request an annual wellness visit for Maria Alvarez. She's available weekday mornings the weeks of July 27 and August 3. Please reply with available times and any pre-visit requirements. Thank you.
+        </div>
+        <div class="req-actions">
+          <button class="btn btn-primary" type="button" onclick="document.getElementById('m-req-confirm').classList.add('show')">Approve &amp; send request</button>
+          <button class="btn btn-ghost" type="button">Edit draft</button>
+          <span class="lock-note">🔒 Nothing sends until you approve.</span>
+        </div>
+        <div class="req-confirm" id="m-req-confirm">Sent. I'll log it and watch for the office's reply. If there's no response within 3 business days, I'll flag it on the checklist and draft a follow-up for your approval.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ROBERT ============ -->
+  <div id="person-robert" hidden>
+
+    <section class="upcoming">
+      <h2 class="section-title">Upcoming <span class="hint">confirmed by the office</span></h2>
+      <p class="req-note" style="margin-top:12px;">Nothing confirmed yet — one request is awaiting the office's reply below.</p>
+    </section>
+
+    <section class="requests">
+      <h2 class="section-title">Requests in flight <span class="hint">where each one stands</span></h2>
+
+      <div class="req-card">
+        <div class="req-top">
+          <p class="req-title">Follow-up visit — Primary Care Associates</p>
+        </div>
+        <div class="stage-row">
+          <span class="stage done"><span class="stage-dot"></span><span class="stage-name">Drafted</span></span>
+          <span class="stage-line"></span>
+          <span class="stage done"><span class="stage-dot"></span><span class="stage-name">Approved</span></span>
+          <span class="stage-line"></span>
+          <span class="stage done"><span class="stage-dot"></span><span class="stage-name">Sent Jul 15</span></span>
+          <span class="stage-line"></span>
+          <span class="stage now"><span class="stage-dot"></span><span class="stage-name">Office response</span></span>
+          <span class="stage-line"></span>
+          <span class="stage"><span class="stage-dot"></span><span class="stage-name">Confirmed</span></span>
+        </div>
+        <p class="req-note"><b>Tracking:</b> sent July 15, no reply yet. If nothing arrives by July 22, I'll flag it and draft a follow-up for your approval — the non-response gets logged either way.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- NEW REQUEST -->
+  <section class="new-req">
+    <h2 class="section-title">Request an appointment <span class="hint">I draft it; you approve it</span></h2>
+    <div class="field">
+      <label for="nr-provider">Provider or office</label>
+      <select id="nr-provider">
+        <option>Primary Care Associates</option>
+        <option>Riverbend Cardiology — Dr. Adaeze Okafor</option>
+        <option>Lakeside Optometry</option>
+        <option>Add a new provider…</option>
+      </select>
+      <p class="fh">Pulled from the provider list. Adding one here adds it there too.</p>
+    </div>
+    <div class="field">
+      <label for="nr-reason">Reason for visit</label>
+      <input id="nr-reason" type="text" placeholder="e.g., follow-up, annual physical, new concern">
+    </div>
+    <div class="field">
+      <label for="nr-window">When works</label>
+      <textarea id="nr-window" placeholder="e.g., weekday mornings, weeks of July 27 or August 3"></textarea>
+      <p class="fh">A window, not a slot — the office replies with actual times.</p>
+    </div>
+    <div class="req-actions">
+      <button class="btn btn-primary" type="button" onclick="document.getElementById('nr-confirm').classList.add('show')">Draft the request</button>
+    </div>
+    <div class="req-confirm" id="nr-confirm">Draft created. It's now in "Requests in flight" waiting for your approval — review the wording there before anything sends.</div>
+    <p class="new-note">◧ No live booking, by design. Offices confirm times; I track the exchange so nothing falls through.</p>
+  </section>
+
+  <footer>Synthetic demo data · Appointment requests · 101 tier · No live booking</footer>
+
+</div>
+
+<script>
+  function switchPerson(who){
+    var isMaria = who === 'maria';
+    document.getElementById('person-maria').hidden = !isMaria;
+    document.getElementById('person-robert').hidden = isMaria;
+    document.getElementById('btn-maria').classList.toggle('active', isMaria);
+    document.getElementById('btn-robert').classList.toggle('active', !isMaria);
+    document.getElementById('btn-maria').setAttribute('aria-selected', isMaria);
+    document.getElementById('btn-robert').setAttribute('aria-selected', !isMaria);
+  }
+</script>
+</body>
+</html>
