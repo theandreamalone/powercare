@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbox — Maria Alvarez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16211d;
+    --muted:#586a63;
+    --paper:#e7ebe6;
+    --card:#ffffff;
+    --teal:#0e6e63;
+    --teal-deep:#0a3d38;
+    --amber:#9a4f12;
+    --amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;
+    --mist:#d3dbd4;
+    --rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+
+  /* top bar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);
+  }
+  .brand{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;
+  }
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .backlink{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;display:flex;align-items:center;gap:6px;
+  }
+  .backlink:hover{color:var(--teal-deep);}
+
+  /* header */
+  .head{margin:26px 0 6px;}
+  .head h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4vw,32px);margin:0 0 8px;letter-spacing:-.01em;
+  }
+  .head p{margin:0;color:var(--muted);font-size:14.5px;}
+  .channel-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+  .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;padding:6px 11px;border-radius:999px;
+    background:var(--card);border:1px solid var(--mist);color:var(--muted);
+  }
+
+  /* inbox list */
+  .inbox{margin-top:22px;border:1px solid var(--mist);border-radius:14px;overflow:hidden;background:var(--card);}
+  .item{
+    display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+    padding:16px 18px;border-bottom:1px solid var(--rule);cursor:pointer;
+    background:none;width:100%;text-align:left;font-family:inherit;
+  }
+  .item:last-child{border-bottom:none;}
+  .item:hover{background:#f2f6f2;}
+  .item:focus-visible{outline:3px solid #9fd0c8;outline-offset:-3px;}
+  .avatar{
+    width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;color:#fff;
+  }
+  .avatar.email{background:var(--teal-deep);}
+  .avatar.voice{background:var(--amber);}
+  .item .meta .from{font-weight:600;font-size:14.5px;margin:0 0 3px;}
+  .item .meta .subject{font-size:13.5px;color:var(--muted);margin:0;}
+  .item .meta .type{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--teal);margin:0 0 4px;
+  }
+  .item .right{text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+  .item .date{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);}
+  .item .flag{
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;background:var(--teal-soft);color:var(--teal-deep);white-space:nowrap;
+  }
+
+  /* opened viewer */
+  .viewer{
+    margin-top:20px;border:1px solid var(--mist);border-radius:14px;background:var(--card);
+    overflow:hidden;display:none;
+  }
+  .viewer.show{display:block;}
+  .viewer-head{padding:20px 22px 16px;border-bottom:1px solid var(--rule);background:#f4f7f4;}
+  .viewer-head .vtype{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 10px;
+  }
+  .viewer-head h2{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:18px;margin:0 0 12px;}
+  .field-line{font-size:13.5px;color:var(--muted);margin:2px 0;}
+  .field-line b{color:var(--ink);font-weight:600;}
+  .viewer-body{padding:22px;font-size:15px;line-height:1.65;}
+  .viewer-body p{margin:0 0 14px;}
+  .viewer-body p:last-child{margin-bottom:0;}
+
+  /* voice memo player (visual only) */
+  .memo-player{
+    display:flex;align-items:center;gap:14px;padding:16px 18px;
+    background:#f7f9f7;border:1px solid var(--rule);border-radius:10px;margin-bottom:18px;
+  }
+  .play-btn{
+    width:42px;height:42px;border-radius:50%;background:var(--amber);color:#fff;border:none;
+    font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;
+  }
+  .wave{flex:1;height:28px;display:flex;align-items:center;gap:3px;overflow:hidden;}
+  .wave span{width:3px;border-radius:2px;background:var(--mist);}
+  .memo-dur{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);flex-shrink:0;}
+  .transcript-tag{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 8px;
+  }
+
+  /* provenance callout */
+  .provenance{
+    margin:0 22px 22px;padding:14px 16px;border-radius:10px;
+    background:var(--teal-soft);border:1px solid #a9d2c9;
+  }
+  .provenance .pt{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 6px;
+  }
+  .provenance p{margin:0;font-size:13.5px;color:#234a44;}
+  .provenance a{color:var(--teal-deep);font-weight:600;}
+
+  .empty-hint{
+    text-align:center;color:var(--muted);font-size:13.5px;padding:20px;
+    font-family:"IBM Plex Mono",monospace;letter-spacing:.03em;
+  }
+
+  footer{
+    margin-top:40px;text-align:center;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:var(--muted);
+  }
+
+  @media (max-width:560px){
+    .item{grid-template-columns:40px 1fr;}
+    .item .right{grid-column:2;flex-direction:row;justify-content:flex-start;margin-top:6px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <a class="backlink" href="case_breakdown.html">← Back to case breakdown</a>
+  </div>
+
+  <div class="head">
+    <h1>Inbox</h1>
+    <p>Incoming items for Maria Alvarez's case. These are the sources the coordinator reads to build the accountability picture.</p>
+    <div class="channel-row">
+      <span class="chip">2 items</span>
+      <span class="chip">Email</span>
+      <span class="chip">Voice memo</span>
+    </div>
+  </div>
+
+  <!-- INBOX LIST -->
+  <div class="inbox">
+    <button class="item" onclick="openItem('email')">
+      <div class="avatar email">RD</div>
+      <div class="meta">
+        <p class="type">Email</p>
+        <p class="from">Records Department · Primary Care Associates</p>
+        <p class="subject">RE: Primary care records for cardiology appointment</p>
+      </div>
+      <div class="right">
+        <span class="date">Jun 30</span>
+        <span class="flag">Source of analysis</span>
+      </div>
+    </button>
+
+    <button class="item" onclick="openItem('voice')">
+      <div class="avatar voice">MA</div>
+      <div class="meta">
+        <p class="type">Voice memo</p>
+        <p class="from">Maria Alvarez · Patient</p>
+        <p class="subject">"I still haven't heard back about my records…"</p>
+      </div>
+      <div class="right">
+        <span class="date">Jul 1</span>
+        <span class="flag">Transcript ready</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- EMAIL VIEWER -->
+  <div class="viewer" id="viewer-email">
+    <div class="viewer-head">
+      <p class="vtype">Email · opened</p>
+      <h2>RE: Primary care records for cardiology appointment</h2>
+      <p class="field-line"><b>From:</b> Records Department, Primary Care Associates</p>
+      <p class="field-line"><b>To:</b> Maria Alvarez</p>
+      <p class="field-line"><b>Received:</b> June 30, 2026</p>
+    </div>
+    <div class="viewer-body">
+      <p>Hello Ms. Alvarez,</p>
+      <p>Per your request, our office sent your records to the cardiology office on June 28. Please confirm receipt on your end.</p>
+      <p>Let us know if anything further is needed.</p>
+      <p>— Records Department, Primary Care Associates</p>
+    </div>
+    <div class="provenance">
+      <p class="pt">Why this matters</p>
+      <p>This email is the source that produced the case analysis. It states the records were sent — but offers no proof of delivery. That single claim, unconfirmed, is what the coordinator flagged. <a href="case_breakdown.html">See the analysis it generated →</a></p>
+    </div>
+  </div>
+
+  <!-- VOICE MEMO VIEWER -->
+  <div class="viewer" id="viewer-voice">
+    <div class="viewer-head">
+      <p class="vtype">Voice memo · opened</p>
+      <h2>Message from Maria Alvarez</h2>
+      <p class="field-line"><b>From:</b> Maria Alvarez, Patient</p>
+      <p class="field-line"><b>Recorded:</b> July 1, 2026</p>
+    </div>
+    <div class="viewer-body">
+      <div class="memo-player">
+        <button class="play-btn" onclick="return false;" aria-label="Playback not available in demo">▶</button>
+        <div class="wave" id="wave"></div>
+        <span class="memo-dur">0:41</span>
+      </div>
+      <p class="transcript-tag">Transcript</p>
+      <p>"Hi, this is Maria Alvarez. I'm calling because I still haven't heard back about whether my records made it to the cardiologist. The primary care office told me they sent them, but when I called cardiology they said they don't have anything. My appointment is coming up and I'm worried it's going to get cancelled. I don't know who I'm supposed to be calling at this point. Can someone help me figure this out?"</p>
+    </div>
+    <div class="provenance">
+      <p class="pt">Why this matters</p>
+      <p>Maria's own words confirm the breakdown from the patient side: two offices give conflicting accounts, and she doesn't know who owns the fix. This is the confusion the coordinator resolves into a clear owner and next step. <a href="case_breakdown.html">See the analysis →</a></p>
+    </div>
+  </div>
+
+  <div class="empty-hint" id="hint">Select an item above to open it.</div>
+
+  <footer>Synthetic demo data · Source inbox · Feeds one case analysis</footer>
+
+</div>
+
+<script>
+  // build a simple static waveform
+  (function(){
+    var wave = document.getElementById('wave');
+    if(!wave) return;
+    var heights = [8,14,20,26,22,16,24,28,18,12,20,26,24,14,10,18,24,28,22,16,12,20,26,20,14,22,28,24,16,10,14,22,26,18,12,16];
+    heights.forEach(function(h){
+      var s = document.createElement('span');
+      s.style.height = h + 'px';
+      wave.appendChild(s);
+    });
+  })();
+
+  function openItem(which){
+    document.getElementById('viewer-email').classList.remove('show');
+    document.getElementById('viewer-voice').classList.remove('show');
+    document.getElementById('hint').style.display = 'none';
+    document.getElementById('viewer-' + which).classList.add('show');
+    document.getElementById('viewer-' + which).scrollIntoView({behavior:'smooth', block:'start'});
+  }
+</script>
+</body>
+</html>
