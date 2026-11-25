@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pill Tracking — Care Coordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  DESIGN NOTES (hidden) — database gaps flagged for this page:
+  1. No medication_schedule table. The medications list (patient profile) stores
+     the prescription as fact; schedule needs: record_id, medication FK,
+     time_of_day via workflow_taxonomy, dose display text, active flag.
+  2. No dose_log table. Needs: record_id, patient_id, medication FK, scheduled_at,
+     logged_at, status (taken / skipped / missed) via workflow_taxonomy.
+     Dose logs are FACTUAL self-reported data — factual table, provenance =
+     patient-reported. Any adherence interpretation belongs in ai_analyses.
+  3. Supply / days-remaining is derived: last fill date + quantity + schedule.
+     Do not store as a static column; compute or expose via a view.
+  4. Refill requests reuse the appointment-request pattern (draft, approved,
+     sent to pharmacy, response tracked). No backing table yet — same gap
+     flagged on care_checklist.html.
+  5. OPEN QUESTION (same as self-reported issues): does self-reported adherence
+     count toward care-gap data, and what review step applies before it does?
+  6. Doses shown are the provider's prescription displayed as fact. The system
+     never suggests dose changes, never advises starting/stopping. Missed-dose
+     copy routes the user to their provider or pharmacist.
+-->
+<style>
+  :root{
+    --ink:#16211d;
+    --muted:#586a63;
+    --paper:#e7ebe6;
+    --card:#ffffff;
+    --teal:#0e6e63;
+    --teal-deep:#0a3d38;
+    --amber:#9a4f12;
+    --amber-soft:#f3e4d4;
+    --teal-soft:#dcebe7;
+    --mist:#d3dbd4;
+    --rule:#cdd6cf;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 80px;}
+
+  /* top bar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--rule);flex-wrap:wrap;
+  }
+  .brand{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:9px;
+  }
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+  .nav-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .nav-links a{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--teal);text-decoration:none;
+  }
+  .nav-links a:hover{color:var(--teal-deep);}
+
+  /* person switcher */
+  .switcher{display:flex;gap:8px;margin-top:22px;}
+  .person-btn{
+    display:flex;align-items:center;gap:10px;
+    background:var(--card);border:1px solid var(--mist);border-radius:999px;
+    padding:8px 16px 8px 8px;cursor:pointer;font-family:inherit;font-size:13.5px;
+    font-weight:600;color:var(--muted);
+  }
+  .person-btn .pav{
+    width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;color:#fff;
+    background:var(--mist);
+  }
+  .person-btn.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-deep);}
+  .person-btn.active .pav{background:var(--teal);}
+  .person-btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+
+  /* header */
+  .head{margin:26px 0 0;}
+  .head h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(24px,4vw,32px);margin:0 0 8px;letter-spacing:-.01em;
+  }
+  .head p{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch;}
+
+  .section-title{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin:0 0 4px;display:flex;align-items:center;gap:10px;
+  }
+  .section-title .hint{font-weight:400;font-size:12.5px;color:var(--muted);}
+
+  /* today */
+  .today{margin-top:26px;}
+  .time-block{margin-top:16px;}
+  .time-label{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px;
+  }
+  .time-label::after{content:"";flex:1;height:1px;background:var(--rule);}
+  .dose-card{background:var(--card);border:1px solid var(--mist);border-radius:12px;overflow:hidden;}
+  .dose{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:14px 18px;border-bottom:1px solid var(--rule);
+  }
+  .dose:last-child{border-bottom:none;}
+  .dose.taken{background:#f4f7f4;}
+  .dose.taken .dose-name{color:var(--muted);}
+  .pill-ic{
+    width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:16px;background:var(--teal-soft);color:var(--teal);flex-shrink:0;
+  }
+  .dose.taken .pill-ic{background:#e4ebe4;color:var(--muted);}
+  .dose-name{font-weight:600;font-size:14.5px;margin:0 0 2px;}
+  .dose-sub{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);margin:0;}
+  .take-btn{
+    font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;
+    padding:9px 16px;border-radius:9px;cursor:pointer;
+    background:var(--teal);color:#fff;border:1px solid transparent;white-space:nowrap;
+  }
+  .take-btn:hover{background:var(--teal-deep);}
+  .take-btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .take-btn.undone{
+    background:transparent;border-color:var(--mist);color:var(--muted);
+  }
+  .take-btn.undone:hover{background:#eef2ee;}
+  .taken-stamp{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--teal-deep);display:flex;align-items:center;gap:6px;
+  }
+  .taken-stamp::before{content:"✓";color:var(--teal);font-weight:700;}
+
+  /* supply */
+  .supply{margin-top:34px;}
+  .supply-list{display:flex;flex-direction:column;gap:12px;margin-top:14px;}
+  .supply-card{
+    background:var(--card);border:1px solid var(--mist);border-radius:12px;padding:16px 18px;
+  }
+  .supply-card.low{border-color:#e0c3a4;background:var(--amber-soft);}
+  .supply-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+  .supply-name{font-weight:600;font-size:14.5px;margin:0;}
+  .supply-tag{
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 9px;border-radius:999px;background:var(--teal-soft);color:var(--teal-deep);white-space:nowrap;
+  }
+  .supply-card.low .supply-tag{background:#eeddca;color:var(--amber);}
+  .supply-track{height:8px;border-radius:999px;background:#eef1ee;overflow:hidden;margin-bottom:8px;border:1px solid var(--rule);}
+  .supply-card.low .supply-track{background:rgba(255,255,255,.6);}
+  .supply-fill{height:100%;border-radius:999px;background:var(--teal);}
+  .supply-card.low .supply-fill{background:var(--amber);}
+  .supply-sub{font-size:13px;color:var(--muted);margin:0;}
+  .supply-card.low .supply-sub{color:#7a4a1e;}
+  .supply-action{
+    margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .btn{
+    font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;
+    padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;
+  }
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn:focus-visible{outline:3px solid #9fd0c8;outline-offset:2px;}
+  .lock-note{font-size:12.5px;color:var(--amber);display:flex;align-items:center;gap:6px;}
+  .supply-confirm{
+    display:none;margin-top:12px;padding:11px 14px;border-radius:9px;
+    background:rgba(255,255,255,.65);border:1px solid #e0c3a4;font-size:13px;color:#7a4a1e;
+  }
+  .supply-confirm.show{display:block;}
+
+  /* week strip */
+  .week{margin-top:34px;}
+  .week-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:14px;
+  }
+  .day{
+    background:var(--card);border:1px solid var(--mist);border-radius:10px;
+    padding:10px 6px;text-align:center;
+  }
+  .day .d-label{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 6px;
+  }
+  .day .d-mark{
+    width:22px;height:22px;border-radius:50%;margin:0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  }
+  .day.full .d-mark{background:var(--teal);color:#fff;}
+  .day.partial .d-mark{background:var(--amber-soft);color:var(--amber);border:1px solid #e0c3a4;}
+  .day.none .d-mark{background:#eef1ee;color:var(--muted);border:1px solid var(--mist);}
+  .day.today-day{border-color:var(--teal);background:var(--teal-soft);}
+  .week-legend{
+    display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;
+    font-size:12.5px;color:var(--muted);
+  }
+  .lg{display:flex;align-items:center;gap:7px;}
+  .lg i{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .lg.full i{background:var(--teal);}
+  .lg.partial i{background:var(--amber);}
+  .lg.none i{background:var(--mist);}
+
+  /* missed note */
+  .missed-note{
+    margin-top:26px;background:var(--card);border:1px solid var(--mist);border-radius:12px;
+    padding:16px 18px;display:flex;gap:14px;align-items:flex-start;
+  }
+  .mn-dot{
+    width:34px;height:34px;border-radius:9px;background:var(--teal-soft);color:var(--teal);
+    display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  }
+  .missed-note p{margin:0;font-size:13.5px;color:var(--muted);max-width:62ch;}
+  .missed-note p b{color:var(--ink);}
+
+  footer{
+    margin-top:40px;text-align:center;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:var(--muted);
+  }
+
+  @media (max-width:560px){
+    .dose{grid-template-columns:auto 1fr;}
+    .dose > .take-btn, .dose > .taken-stamp{grid-column:2;justify-self:start;}
+    .week-grid{gap:5px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Care Coordinator</div>
+    <nav class="nav-links" aria-label="Site">
+      <a href="care_checklist.html">Checklist</a>
+      <a href="patient_dashboard.html">Case dashboard</a>
+      <a href="patient_profile.html">Profile</a>
+    </nav>
+  </div>
+
+  <!-- PERSON SWITCHER -->
+  <div class="switcher" role="tablist" aria-label="Person">
+    <button class="person-btn active" id="btn-maria" role="tab" aria-selected="true" onclick="switchPerson('maria')">
+      <span class="pav">MA</span> Maria Alvarez
+    </button>
+    <button class="person-btn" id="btn-robert" role="tab" aria-selected="false" onclick="switchPerson('robert')">
+      <span class="pav">RA</span> Robert Alvarez
+    </button>
+  </div>
+
+  <div class="head">
+    <h1>Pill tracking</h1>
+    <p>Today's doses as prescribed, current supply, and the week at a glance. I track what's on file — dose changes always come from the provider, never from me.</p>
+  </div>
+
+  <!-- ============ MARIA ============ -->
+  <div id="person-maria">
+
+    <section class="today">
+      <h2 class="section-title">Today · Sunday, July 19 <span class="hint">tap when taken</span></h2>
+
+      <div class="time-block">
+        <p class="time-label">Morning</p>
+        <div class="dose-card">
+          <div class="dose" id="dose-m1">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Lisinopril 10 mg</p>
+              <p class="dose-sub">1 tablet · with or without food</p>
+            </div>
+            <button class="take-btn" type="button" onclick="markTaken('m1')">Mark taken</button>
+          </div>
+          <div class="dose taken" id="dose-m2">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Levothyroxine 50 mcg</p>
+              <p class="dose-sub">1 tablet · empty stomach</p>
+            </div>
+            <span class="taken-stamp">Taken 7:15 AM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="time-block">
+        <p class="time-label">Evening</p>
+        <div class="dose-card">
+          <div class="dose" id="dose-m3">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Atorvastatin 20 mg</p>
+              <p class="dose-sub">1 tablet · evening</p>
+            </div>
+            <button class="take-btn" type="button" onclick="markTaken('m3')">Mark taken</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="supply">
+      <h2 class="section-title">Supply <span class="hint">from last fill on file</span></h2>
+      <div class="supply-list">
+        <div class="supply-card">
+          <div class="supply-top">
+            <p class="supply-name">Lisinopril 10 mg</p>
+            <span class="supply-tag">24 days left</span>
+          </div>
+          <div class="supply-track"><div class="supply-fill" style="width:80%"></div></div>
+          <p class="supply-sub">Last filled June 22 · 30-day supply. I'll suggest a refill request around August 5.</p>
+        </div>
+        <div class="supply-card">
+          <div class="supply-top">
+            <p class="supply-name">Levothyroxine 50 mcg</p>
+            <span class="supply-tag">41 days left</span>
+          </div>
+          <div class="supply-track"><div class="supply-fill" style="width:46%"></div></div>
+          <p class="supply-sub">Last filled May 30 · 90-day supply.</p>
+        </div>
+        <div class="supply-card">
+          <div class="supply-top">
+            <p class="supply-name">Atorvastatin 20 mg</p>
+            <span class="supply-tag">24 days left</span>
+          </div>
+          <div class="supply-track"><div class="supply-fill" style="width:80%"></div></div>
+          <p class="supply-sub">Last filled June 22 · 30-day supply.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ROBERT ============ -->
+  <div id="person-robert" hidden>
+
+    <section class="today">
+      <h2 class="section-title">Today · Sunday, July 19 <span class="hint">tap when taken</span></h2>
+
+      <div class="time-block">
+        <p class="time-label">Morning</p>
+        <div class="dose-card">
+          <div class="dose taken" id="dose-r1">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Amlodipine 5 mg</p>
+              <p class="dose-sub">1 tablet · morning</p>
+            </div>
+            <span class="taken-stamp">Taken 8:02 AM</span>
+          </div>
+          <div class="dose" id="dose-r2">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Metformin 500 mg</p>
+              <p class="dose-sub">1 tablet · with breakfast</p>
+            </div>
+            <button class="take-btn" type="button" onclick="markTaken('r2')">Mark taken</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="time-block">
+        <p class="time-label">Evening</p>
+        <div class="dose-card">
+          <div class="dose" id="dose-r3">
+            <span class="pill-ic">◍</span>
+            <div>
+              <p class="dose-name">Metformin 500 mg</p>
+              <p class="dose-sub">1 tablet · with dinner</p>
+            </div>
+            <button class="take-btn" type="button" onclick="markTaken('r3')">Mark taken</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="supply">
+      <h2 class="section-title">Supply <span class="hint">from last fill on file</span></h2>
+      <div class="supply-list">
+        <div class="supply-card low">
+          <div class="supply-top">
+            <p class="supply-name">Amlodipine 5 mg</p>
+            <span class="supply-tag">5 days left</span>
+          </div>
+          <div class="supply-track"><div class="supply-fill" style="width:17%"></div></div>
+          <p class="supply-sub">Runs out July 24. The refill request to his pharmacy is drafted — it goes nowhere until you approve it.</p>
+          <div class="supply-action">
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('refill-confirm').classList.add('show')">Approve refill request</button>
+            <span class="lock-note">🔒 Nothing sends without your approval.</span>
+          </div>
+          <div class="supply-confirm" id="refill-confirm">Approved. I'll send the refill request to his pharmacy, log it, and track the response. If there's no reply within 2 business days, I'll flag it on the checklist.</div>
+        </div>
+        <div class="supply-card">
+          <div class="supply-top">
+            <p class="supply-name">Metformin 500 mg</p>
+            <span class="supply-tag">33 days left</span>
+          </div>
+          <div class="supply-track"><div class="supply-fill" style="width:37%"></div></div>
+          <p class="supply-sub">Last filled June 20 · 90-day supply.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- WEEK STRIP (shared visual, swaps with person) -->
+  <section class="week">
+    <h2 class="section-title">This week <span class="hint">doses logged, at a glance</span></h2>
+    <div class="week-grid" id="week-grid">
+      <div class="day full"><p class="d-label">Mon</p><span class="d-mark">✓</span></div>
+      <div class="day full"><p class="d-label">Tue</p><span class="d-mark">✓</span></div>
+      <div class="day partial"><p class="d-label">Wed</p><span class="d-mark">–</span></div>
+      <div class="day full"><p class="d-label">Thu</p><span class="d-mark">✓</span></div>
+      <div class="day full"><p class="d-label">Fri</p><span class="d-mark">✓</span></div>
+      <div class="day none"><p class="d-label">Sat</p><span class="d-mark">·</span></div>
+      <div class="day today-day partial"><p class="d-label">Sun</p><span class="d-mark">–</span></div>
+    </div>
+    <div class="week-legend">
+      <span class="lg full"><i></i>All doses logged</span>
+      <span class="lg partial"><i></i>Some logged</span>
+      <span class="lg none"><i></i>None logged</span>
+    </div>
+  </section>
+
+  <div class="missed-note">
+    <span class="mn-dot">◧</span>
+    <p><b>If a dose was missed:</b> I don't advise doubling up, skipping, or changing anything — that guidance belongs with the prescribing provider or pharmacist. What I can do is log it, watch supply, and draft the refill or question for the provider when you want one.</p>
+  </div>
+
+  <footer>Synthetic demo data · Pill tracking · 101 tier · Self-reported logs</footer>
+
+</div>
+
+<script>
+  function switchPerson(who){
+    var isMaria = who === 'maria';
+    document.getElementById('person-maria').hidden = !isMaria;
+    document.getElementById('person-robert').hidden = isMaria;
+    document.getElementById('btn-maria').classList.toggle('active', isMaria);
+    document.getElementById('btn-robert').classList.toggle('active', !isMaria);
+    document.getElementById('btn-maria').setAttribute('aria-selected', isMaria);
+    document.getElementById('btn-robert').setAttribute('aria-selected', !isMaria);
+  }
+
+  function markTaken(id){
+    var row = document.getElementById('dose-' + id);
+    if(!row) return;
+    row.classList.add('taken');
+    var btn = row.querySelector('.take-btn');
+    if(btn){
+      var now = new Date();
+      var h = now.getHours(), m = now.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if(h === 0) h = 12;
+      var stamp = document.createElement('span');
+      stamp.className = 'taken-stamp';
+      stamp.textContent = 'Taken ' + h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
+      btn.replaceWith(stamp);
+    }
+  }
+</script>
+</body>
+</html>
